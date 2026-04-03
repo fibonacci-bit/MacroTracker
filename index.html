@@ -95,6 +95,19 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .meal-cal { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--mono); flex-shrink: 0; }
 .del-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; color: var(--text3); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
 
+/* SAVE STAR BUTTON */
+.save-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; color: var(--text3); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.15s, border-color 0.15s; }
+.save-btn.saved { color: var(--amber); border-color: var(--amber); }
+
+/* SAVED FOODS LIST */
+.saved-food-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
+.saved-food-item:last-child { border-bottom: none; }
+.saved-food-info { flex: 1; min-width: 0; }
+.saved-food-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.saved-food-macros { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
+.use-btn { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 6px; padding: 5px 12px; color: var(--green); cursor: pointer; font-size: 12px; font-weight: 600; font-family: var(--font); flex-shrink: 0; transition: background 0.15s; }
+.use-btn:active { background: rgba(74,222,128,0.2); }
+
 /* FORM */
 .form-group { margin-bottom: 12px; }
 .form-label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
@@ -235,7 +248,19 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <label class="form-label">Sugar (g)</label>
           <input class="form-input" type="number" id="f-sugar" placeholder="0" inputmode="decimal" style="width:50%"/>
         </div>
-        <button class="btn btn-primary" onclick="addFood()">+ Add to log</button>
+        <div style="display:flex;gap:8px;">
+          <button class="btn btn-primary" style="flex:1" onclick="addFood()">+ Add to log</button>
+          <button class="btn" style="background:var(--bg3);border:1px solid var(--border2);color:var(--amber);width:auto;padding:14px 16px;" onclick="saveCurrentAsFavorite()" title="Save as favorite">&#9733;</button>
+        </div>
+      </div>
+
+      <!-- SAVED FOODS CARD -->
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Saved foods</span>
+          <span style="font-size:11px;color:var(--text3);font-family:var(--mono);">tap to fill form</span>
+        </div>
+        <div id="saved-foods-list"></div>
       </div>
 
       <div class="card">
@@ -320,7 +345,10 @@ const DEFAULT_GOALS = { calories: 1900, protein: 190, carbs: 163, fat: 65, fiber
 const GOAL_LABELS = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
 const BAR_COLORS = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
 
-let state = (() => { try { return JSON.parse(localStorage.getItem('mt_v2') || 'null') || { goals: {...DEFAULT_GOALS}, logs: {} }; } catch(e) { return { goals: {...DEFAULT_GOALS}, logs: {} }; } })();
+let state = (() => { try { return JSON.parse(localStorage.getItem('mt_v2') || 'null') || { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] }; } catch(e) { return { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] }; } })();
+// Ensure savedFoods exists on older stored state
+if (!state.savedFoods) state.savedFoods = [];
+
 let viewDate = todayKey();
 let calChart = null, macChart = null;
 let activePage = 'today';
@@ -417,7 +445,6 @@ function renderToday() {
   document.getElementById('progress-bars').innerHTML = bars.map(k => {
     const pct = Math.min(Math.round((t[k]/g[k])*100), 120);
     const col = pColor(pct, k==='sugar');
-    const rem = g[k]-t[k];
     return `<div class="prog-section">
       <div class="prog-row">
         <span class="prog-name">${GOAL_LABELS[k]}</span>
@@ -459,6 +486,7 @@ function renderToday() {
 // LOG PAGE
 function renderLogPage() {
   renderDateLabel();
+  renderSavedFoods();
   const items = getDayLog(viewDate);
   const ll = document.getElementById('log-list');
   if (!items.length) { ll.innerHTML = '<div class="empty" style="padding:20px 0">No items logged.</div>'; return; }
@@ -470,6 +498,75 @@ function renderLogPage() {
       </div>
       <button class="del-btn" onclick="deleteItem(${i}); renderLogPage()">&#215;</button>
     </div>`).join('');
+}
+
+// SAVED FOODS
+function renderSavedFoods() {
+  const list = document.getElementById('saved-foods-list');
+  if (!state.savedFoods.length) {
+    list.innerHTML = '<div class="empty" style="padding:16px 0;font-size:13px;">No saved foods yet.<br>Fill in the form above and tap ★ to save.</div>';
+    return;
+  }
+  list.innerHTML = state.savedFoods.map((food, i) => `
+    <div class="saved-food-item">
+      <div class="saved-food-info">
+        <div class="saved-food-name">${food.name}</div>
+        <div class="saved-food-macros">${food.calories} kcal · P:${food.protein}g · C:${food.carbs}g · F:${food.fat}g · Fiber:${food.fiber}g</div>
+      </div>
+      <button class="use-btn" onclick="loadSavedFood(${i})">Use</button>
+      <button class="del-btn" style="margin-left:6px" onclick="deleteSavedFood(${i})">&#215;</button>
+    </div>`).join('');
+}
+
+function getCurrentFormFood() {
+  const name = document.getElementById('f-name').value.trim();
+  if (!name) return null;
+  return {
+    name,
+    meal: document.getElementById('f-meal').value,
+    calories: n(document.getElementById('f-cal').value),
+    protein: n(document.getElementById('f-protein').value),
+    carbs: n(document.getElementById('f-carbs').value),
+    fat: n(document.getElementById('f-fat').value),
+    fiber: n(document.getElementById('f-fiber').value),
+    sugar: n(document.getElementById('f-sugar').value),
+  };
+}
+
+function saveCurrentAsFavorite() {
+  const food = getCurrentFormFood();
+  if (!food) { toast('Enter a food name first'); return; }
+  // Avoid duplicates by name
+  const exists = state.savedFoods.some(f => f.name.toLowerCase() === food.name.toLowerCase());
+  if (exists) { toast('Already saved!'); return; }
+  state.savedFoods.push(food);
+  save();
+  toast('★ Saved: ' + food.name);
+  renderSavedFoods();
+}
+
+function loadSavedFood(idx) {
+  const food = state.savedFoods[idx];
+  if (!food) return;
+  document.getElementById('f-name').value = food.name;
+  document.getElementById('f-meal').value = food.meal;
+  document.getElementById('f-cal').value = food.calories;
+  document.getElementById('f-protein').value = food.protein;
+  document.getElementById('f-carbs').value = food.carbs;
+  document.getElementById('f-fat').value = food.fat;
+  document.getElementById('f-fiber').value = food.fiber;
+  document.getElementById('f-sugar').value = food.sugar;
+  // Scroll to top of log page to show filled form
+  document.getElementById('content').scrollTop = 0;
+  toast('Loaded: ' + food.name);
+}
+
+function deleteSavedFood(idx) {
+  const name = state.savedFoods[idx].name;
+  state.savedFoods.splice(idx, 1);
+  save();
+  toast('Removed: ' + name);
+  renderSavedFoods();
 }
 
 function addFood() {
