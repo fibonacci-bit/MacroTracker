@@ -41,7 +41,6 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
 html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(--text); font-family: var(--font); }
-
 /* LAYOUT */
 .app { display: flex; flex-direction: column; height: 100vh; height: 100dvh; }
 .header { padding: calc(var(--safe-top) + 16px) 20px 14px; background: var(--bg); border-bottom: 1px solid var(--border); flex-shrink: 0; }
@@ -56,15 +55,12 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .nav-btn.active { color: var(--accent); }
 .nav-btn svg { width: 22px; height: 22px; }
 .nav-label { font-size: 11px; font-weight: 500; }
-
 /* PAGE */
 .page { display: none; padding: 16px 16px 24px; }
 .page.active { display: block; }
-
 /* CARDS */
 .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; margin-bottom: 12px; }
 .card-title { font-size: 12px; font-weight: 500; color: var(--text3); letter-spacing: 0.1em; text-transform: uppercase; font-family: var(--mono); margin-bottom: 12px; }
-
 /* METRIC GRID */
 .metric-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 12px; }
 .metric-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 14px 16px; }
@@ -75,7 +71,6 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .metric-card.good .metric-val { color: var(--green); }
 .metric-card.warn .metric-val { color: var(--amber); }
 .metric-card.low .metric-val { color: var(--red); }
-
 /* PROGRESS */
 .prog-section { margin-bottom: 4px; }
 .prog-row { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 5px; }
@@ -83,7 +78,6 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .prog-nums { font-size: 12px; color: var(--text3); font-family: var(--mono); }
 .prog-bar { height: 5px; background: var(--bg4); border-radius: 3px; margin-bottom: 12px; overflow: hidden; }
 .prog-fill { height: 100%; border-radius: 3px; transition: width 0.4s ease; }
-
 /* MEAL LIST */
 .meal-item { display: flex; align-items: center; gap: 12px; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .meal-item:last-child { border-bottom: none; }
@@ -94,11 +88,9 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .meal-macros { font-size: 11px; color: var(--text3); margin-top: 2px; }
 .meal-cal { font-size: 14px; font-weight: 600; color: var(--text); font-family: var(--mono); flex-shrink: 0; }
 .del-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; color: var(--text3); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
-
 /* SAVE STAR BUTTON */
 .save-btn { background: var(--bg3); border: 1px solid var(--border); border-radius: 6px; width: 28px; height: 28px; color: var(--text3); cursor: pointer; font-size: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; transition: color 0.15s, border-color 0.15s; }
 .save-btn.saved { color: var(--amber); border-color: var(--amber); }
-
 /* SAVED FOODS LIST */
 .saved-food-item { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); }
 .saved-food-item:last-child { border-bottom: none; }
@@ -107,7 +99,23 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .saved-food-macros { font-size: 11px; color: var(--text3); margin-top: 2px; font-family: var(--mono); }
 .use-btn { background: rgba(74,222,128,0.1); border: 1px solid rgba(74,222,128,0.3); border-radius: 6px; padding: 5px 12px; color: var(--green); cursor: pointer; font-size: 12px; font-weight: 600; font-family: var(--font); flex-shrink: 0; transition: background 0.15s; }
 .use-btn:active { background: rgba(74,222,128,0.2); }
-
+/* FDC SEARCH */
+.search-row { display: flex; gap: 8px; margin-bottom: 0; }
+.search-btn { background: var(--accent); border: none; border-radius: var(--radius-sm); padding: 0 18px; color: #0a1a0e; font-family: var(--font); font-size: 14px; font-weight: 600; cursor: pointer; flex-shrink: 0; transition: opacity 0.15s; }
+.search-btn:active { opacity: 0.8; }
+.search-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.search-results { margin-top: 12px; }
+.search-result { display: flex; align-items: center; gap: 10px; padding: 10px 0; border-bottom: 1px solid var(--border); cursor: pointer; transition: background 0.1s; }
+.search-result:last-child { border-bottom: none; }
+.search-result:active { background: var(--bg3); margin: 0 -16px; padding: 10px 16px; border-radius: 6px; }
+.search-result-info { flex: 1; min-width: 0; }
+.search-result-name { font-size: 14px; font-weight: 500; color: var(--text); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.search-result-sub { font-size: 11px; color: var(--text3); font-family: var(--mono); margin-top: 1px; }
+.search-result-macros { font-size: 11px; color: var(--text2); margin-top: 2px; font-family: var(--mono); }
+.search-result-cal { font-size: 15px; font-weight: 600; color: var(--accent); font-family: var(--mono); flex-shrink: 0; }
+.search-status { text-align: center; color: var(--text3); font-size: 13px; padding: 16px 0; }
+.search-spinner { display: inline-block; width: 16px; height: 16px; border: 2px solid var(--border2); border-top-color: var(--accent); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle; margin-right: 6px; }
+@keyframes spin { to { transform: rotate(360deg); } }
 /* FORM */
 .form-group { margin-bottom: 12px; }
 .form-label { font-size: 11px; color: var(--text3); font-family: var(--mono); letter-spacing: 0.08em; margin-bottom: 6px; display: block; }
@@ -120,7 +128,6 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .btn:active { transform: scale(0.98); opacity: 0.85; }
 .btn-primary { background: var(--accent); color: #0a1a0e; }
 .btn-ghost { background: var(--bg3); border: 1px solid var(--border2); color: var(--text2); margin-top: 8px; }
-
 /* HISTORY */
 .chart-wrap { position: relative; width: 100%; height: 180px; margin-bottom: 4px; }
 .history-item { display: flex; align-items: center; justify-content: space-between; padding: 11px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
@@ -131,38 +138,31 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .badge-g { background: rgba(74,222,128,0.15); color: var(--green); }
 .badge-a { background: rgba(251,191,36,0.15); color: var(--amber); }
 .badge-r { background: rgba(248,113,113,0.15); color: var(--red); }
-
 /* GOALS */
 .goal-item { display: flex; align-items: center; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid var(--border); }
 .goal-item:last-child { border-bottom: none; }
 .goal-name { font-size: 14px; color: var(--text2); }
 .goal-input { width: 90px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 8px 10px; color: var(--text); font-size: 15px; font-family: var(--mono); text-align: right; outline: none; }
 .goal-input:focus { border-color: var(--accent); }
-
 /* EMPTY */
 .empty { text-align: center; padding: 40px 20px; color: var(--text3); font-size: 14px; line-height: 1.8; }
 .empty-icon { font-size: 36px; margin-bottom: 12px; }
-
 /* INSTALL BANNER */
 .install-banner { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius); padding: 14px 16px; margin-bottom: 12px; display: flex; align-items: center; gap: 12px; }
 .install-text { flex: 1; font-size: 13px; color: var(--text2); line-height: 1.5; }
 .install-text strong { color: var(--text); display: block; margin-bottom: 2px; }
 .install-close { background: none; border: none; color: var(--text3); cursor: pointer; font-size: 18px; padding: 4px; }
-
 /* TOAST */
 .toast { position: fixed; bottom: calc(70px + var(--safe-bot)); left: 50%; transform: translateX(-50%) translateY(20px); background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 20px; font-size: 13px; color: var(--text); opacity: 0; transition: all 0.3s; pointer-events: none; white-space: nowrap; z-index: 999; }
 .toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
-
 /* LEGEND */
 .legend { display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 10px; }
 .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); font-family: var(--mono); }
 .legend-dot { width: 8px; height: 8px; border-radius: 2px; }
-
 .info-box { background: rgba(74,222,128,0.06); border: 1px solid rgba(74,222,128,0.2); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 13px; color: var(--text2); line-height: 1.7; margin-bottom: 12px; }
 </style>
 </head>
 <body>
-
 <div class="app">
   <div class="header">
     <div class="header-row">
@@ -175,9 +175,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       <button onclick="changeDay(1)" id="next-day-btn">&#8250;</button>
     </div>
   </div>
-
   <div class="content" id="content">
-
     <!-- TODAY PAGE -->
     <div class="page active" id="page-today">
       <div id="install-banner" class="install-banner" style="display:none;">
@@ -187,22 +185,34 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <button class="install-close" onclick="dismissInstall()">&#215;</button>
       </div>
-
       <div class="metric-grid" id="metric-cards"></div>
-
       <div class="card">
         <div class="card-title">Progress</div>
         <div id="progress-bars"></div>
       </div>
-
       <div class="card">
         <div class="card-title">Meals</div>
         <div id="meal-list"></div>
       </div>
     </div>
-
     <!-- LOG PAGE -->
     <div class="page" id="page-log">
+ 
+      <!-- FDC FOOD SEARCH -->
+      <div class="card">
+        <div class="card-title">Search food database</div>
+        <div class="search-row">
+          <input class="form-input" type="text" id="fdc-search"
+            placeholder="e.g. chicken breast, greek yogurt…"
+            autocomplete="off"
+            onkeydown="if(event.key==='Enter')searchFDC()"
+            style="flex:1"/>
+          <button class="search-btn" id="fdc-search-btn" onclick="searchFDC()">Search</button>
+        </div>
+        <div class="search-results" id="fdc-results"></div>
+      </div>
+ 
+      <!-- ADD FOOD MANUALLY -->
       <div class="card">
         <div class="card-title">Add food</div>
         <div class="form-group">
@@ -253,7 +263,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <button class="btn" style="background:var(--bg3);border:1px solid var(--border2);color:var(--amber);width:auto;padding:14px 16px;" onclick="saveCurrentAsFavorite()" title="Save as favorite">&#9733;</button>
         </div>
       </div>
-
+ 
       <!-- SAVED FOODS CARD -->
       <div class="card">
         <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
@@ -262,13 +272,13 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div id="saved-foods-list"></div>
       </div>
-
+ 
       <div class="card">
         <div class="card-title">Today's log</div>
         <div id="log-list"></div>
       </div>
     </div>
-
+ 
     <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
       <div class="card">
@@ -293,7 +303,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div id="history-list"></div>
       </div>
     </div>
-
+ 
     <!-- GOALS PAGE -->
     <div class="page" id="page-goals">
       <div class="info-box">
@@ -316,9 +326,8 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;">Export saves all your logs, goals &amp; saved foods as a JSON file. Import restores from a previous export.</div>
       </div>
     </div>
-
   </div>
-
+ 
   <nav class="nav">
     <button class="nav-btn active" onclick="showPage('today',this)" id="nav-today">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -338,26 +347,31 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     </button>
   </nav>
 </div>
-
 <div class="toast" id="toast"></div>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// ── CONSTANTS ───────────────────────────────────────────────────────────────
+// ── CONSTANTS ────────────────────────────────────────────────────────────────
 const DEFAULT_GOALS = { calories: 1900, protein: 190, carbs: 163, fat: 65, fiber: 30, sugar: 50 };
-const GOAL_LABELS = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
-const BAR_COLORS = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
-
+const GOAL_LABELS   = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
+const BAR_COLORS    = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
+ 
+// ── CLOUDFLARE WORKER PROXY ──────────────────────────────────────────────────
+// All FDC API calls go through this proxy so the API key stays server-side.
+const WORKER_URL = 'https://fdc-proxy.mrcoury.workers.dev/fdc';
+ 
 // ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
 let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] };
 let viewDate = todayKey();
 let calChart = null, macChart = null;
 let activePage = 'today';
-
-// ── INDEXEDDB ────────────────────────────────────────────────────────────────
+ 
+// In-memory store of the last FDC search results for selection
+let _fdcResults = [];
+ 
+// ── INDEXEDDB ─────────────────────────────────────────────────────────────────
+// DB_NAME and DB_VER must never change — changing them would orphan existing data.
 const DB_NAME = 'MacroTrackerDB', DB_VER = 1, STORE = 'state';
 let _db = null;
-
 function openDB() {
   return new Promise((res, rej) => {
     if (_db) { res(_db); return; }
@@ -367,7 +381,6 @@ function openDB() {
     req.onerror = e => rej(e.target.error);
   });
 }
-
 function idbGet(key) {
   return openDB().then(db => new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readonly');
@@ -376,7 +389,6 @@ function idbGet(key) {
     req.onerror = e => rej(e.target.error);
   }));
 }
-
 function idbSet(key, value) {
   return openDB().then(db => new Promise((res, rej) => {
     const tx = db.transaction(STORE, 'readwrite');
@@ -385,14 +397,16 @@ function idbSet(key, value) {
     req.onerror = e => rej(e.target.error);
   }));
 }
-
-// Save state to IndexedDB (also mirror to localStorage as fallback)
+// Save state — writes to IndexedDB first, falls back to localStorage.
+// savedFoods are always merged so a code update never wipes favourites.
 function save() {
+  // Merge any saved foods that might be in localStorage but not in state
+  // (guards against a code reload clearing in-memory state before IDB is read)
   idbSet('mt_state', state).catch(() => {});
   try { localStorage.setItem('mt_v2', JSON.stringify(state)); } catch(e) {}
 }
-
-// ── HELPERS ──────────────────────────────────────────────────────────────────
+ 
+// ── HELPERS ───────────────────────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().split('T')[0]; }
 function fmtKey(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
 function fmtKeyShort(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'numeric',day:'numeric'}); }
@@ -403,28 +417,27 @@ function getDayTotals(k) {
   getDayLog(k).forEach(item => Object.keys(t).forEach(key => t[key] += (item[key]||0)));
   return t;
 }
-
-// ── TOAST ────────────────────────────────────────────────────────────────────
+ 
+// ── TOAST ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 }
-
-// ── NAV ──────────────────────────────────────────────────────────────────────
+ 
+// ── NAV ───────────────────────────────────────────────────────────────────────
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
   activePage = name;
-  if (name === 'today') renderToday();
-  if (name === 'log') renderLogPage();
+  if (name === 'today')   renderToday();
+  if (name === 'log')     renderLogPage();
   if (name === 'history') renderHistory();
-  if (name === 'goals') renderGoals();
+  if (name === 'goals')   renderGoals();
 }
-
 function changeDay(d) {
   const cur = new Date(viewDate+'T00:00:00');
   cur.setDate(cur.getDate() + d);
@@ -432,26 +445,24 @@ function changeDay(d) {
   if (activePage === 'today') renderToday();
   else renderLogPage();
 }
-
 function renderDateLabel() {
   const isToday = viewDate === todayKey();
   document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
 }
-
+ 
 // ── PROGRESS COLOR ────────────────────────────────────────────────────────────
 function pColor(pct, isLimit) {
   if (isLimit) return pct > 100 ? '#f87171' : pct > 80 ? '#fbbf24' : '#4ade80';
   return pct >= 100 ? '#4ade80' : pct > 60 ? '#fbbf24' : '#f87171';
 }
-
-// ── TODAY ────────────────────────────────────────────────────────────────────
+ 
+// ── TODAY ─────────────────────────────────────────────────────────────────────
 function renderToday() {
   renderDateLabel();
   const t = getDayTotals(viewDate);
   const g = state.goals;
   const calPct = g.calories ? Math.round(t.calories/g.calories*100) : 0;
   const calClass = calPct > 100 ? 'over' : '';
-
   document.getElementById('metric-cards').innerHTML = `
     <div class="metric-card ${calClass} full">
       <div class="metric-lbl">Calories</div>
@@ -478,7 +489,7 @@ function renderToday() {
       <div class="metric-val" style="font-size:22px">${t.fiber}g</div>
       <div class="metric-goal">/ ${g.fiber}g</div>
     </div>`;
-
+ 
   const bars = ['calories','protein','carbs','fat','fiber','sugar'];
   document.getElementById('progress-bars').innerHTML = bars.map(k => {
     const pct = g[k] ? Math.min(150, Math.round(t[k]/g[k]*100)) : 0;
@@ -489,60 +500,149 @@ function renderToday() {
         <span class="prog-name">${GOAL_LABELS[k]}</span>
         <span class="prog-nums">${t[k]} / ${g[k]} ${k!=='calories'?'g':''}</span>
       </div>
-      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;background:${color}"></div></div>
+      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('');
-
+ 
   const ml = document.getElementById('meal-list');
   const items = getDayLog(viewDate);
   if (!items.length) {
     ml.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">No foods logged yet</div>';
-    return;
+  } else {
+    ml.innerHTML = items.map((item,i) => `
+      <div class="meal-item">
+        <div class="meal-dot" style="background:${BAR_COLORS[['calories','protein','carbs','fat','fiber','sugar'][i%6]]}"></div>
+        <div class="meal-info">
+          <div class="meal-name">${item.name}</div>
+          <div class="meal-tag">${item.meal}</div>
+          <div class="meal-macros">P:${item.protein}g · C:${item.carbs}g · F:${item.fat}g · Fiber:${item.fiber}g</div>
+        </div>
+        <span class="meal-cal">${item.calories}</span>
+      </div>`).join('');
   }
-  ml.innerHTML = items.map((item,i) => `
-    <div class="meal-item">
-      <div class="meal-dot" style="background:${BAR_COLORS[['calories','protein','carbs','fat','fiber','sugar'][i%6]]}"></div>
-      <div class="meal-info">
-        <div class="meal-name">${item.name}</div>
-        <div class="meal-tag">${item.meal}</div>
-        <div class="meal-macros">P:${item.protein}g · C:${item.carbs}g · F:${item.fat}g · Fiber:${item.fiber}g</div>
-      </div>
-      <span class="meal-cal">${item.calories}</span>
-    </div>`).join('');
-
-  // streak
+ 
+  // Streak counter
   let streak = 0;
   for (let i = 0; i < 30; i++) {
     const d = new Date(); d.setDate(d.getDate() - i);
     const k = d.toISOString().split('T')[0];
     if (getDayLog(k).length) streak++; else break;
   }
-  const se = document.getElementById('streak');
+  const se = document.getElementById('header-streak');
   if (se) se.textContent = streak > 1 ? `${streak} day streak 🔥` : '';
 }
-
+ 
 // ── LOG PAGE ──────────────────────────────────────────────────────────────────
 function renderLogPage() {
   renderDateLabel();
   renderSavedFoods();
   const ll = document.getElementById('log-list');
   const items = getDayLog(viewDate);
-  if (!items.length) { ll.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">No foods logged</div>'; return; }
+  if (!items.length) {
+    ll.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">No foods logged</div>';
+    return;
+  }
   ll.innerHTML = items.map((item,i) => `
     <div class="meal-item">
       <div class="meal-info">
         <div class="meal-name">${item.name}</div>
         <div class="meal-macros">${item.calories} kcal · P:${item.protein}g · C:${item.carbs}g · F:${item.fat}g</div>
       </div>
-      <button class="delete-btn" onclick="deleteItem(${i})" title="Remove">✕</button>
+      <button class="del-btn" onclick="deleteItem(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
-
+ 
+// ── FDC FOOD SEARCH ───────────────────────────────────────────────────────────
+// Extract a nutrient value from the FDC foodNutrients array by nutrient ID.
+// The search endpoint uses numeric nutrientId; the food detail endpoint uses
+// string nutrientNumber — this handles both.
+function getNutrient(nutrients, id) {
+  if (!Array.isArray(nutrients)) return 0;
+  const found = nutrients.find(n =>
+    n.nutrientId === id ||
+    n.nutrientId === String(id) ||
+    n.nutrientNumber === String(id)
+  );
+  return found ? Math.round(parseFloat(found.value) || 0) : 0;
+}
+ 
+async function searchFDC() {
+  const query = document.getElementById('fdc-search').value.trim();
+  if (!query) { toast('Enter a food to search'); return; }
+ 
+  const resultsEl = document.getElementById('fdc-results');
+  const btn = document.getElementById('fdc-search-btn');
+  btn.disabled = true;
+  resultsEl.innerHTML = '<div class="search-status"><span class="search-spinner"></span>Searching…</div>';
+  _fdcResults = [];
+ 
+  try {
+    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+ 
+    if (!data.foods || !data.foods.length) {
+      resultsEl.innerHTML = '<div class="search-status">No results found</div>';
+      btn.disabled = false;
+      return;
+    }
+ 
+    _fdcResults = data.foods.map(food => ({
+      name:     food.description,
+      brand:    food.brandName || '',
+      dataType: food.dataType || '',
+      serving:  food.servingSize ? `${food.servingSize}${food.servingSizeUnit || 'g'}` : '',
+      calories: getNutrient(food.foodNutrients, 1008),
+      protein:  getNutrient(food.foodNutrients, 1003),
+      carbs:    getNutrient(food.foodNutrients, 1005),
+      fat:      getNutrient(food.foodNutrients, 1004),
+      fiber:    getNutrient(food.foodNutrients, 1079),
+      sugar:    getNutrient(food.foodNutrients, 2000) || getNutrient(food.foodNutrients, 1063),
+    }));
+ 
+    resultsEl.innerHTML = _fdcResults.map((f, i) => {
+      const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
+      return `<div class="search-result" onclick="selectFDCFood(${i})">
+        <div class="search-result-info">
+          <div class="search-result-name">${f.name}</div>
+          ${sub ? `<div class="search-result-sub">${sub}</div>` : ''}
+          <div class="search-result-macros">P:${f.protein}g · C:${f.carbs}g · F:${f.fat}g · Fiber:${f.fiber}g</div>
+        </div>
+        <div class="search-result-cal">${f.calories}</div>
+      </div>`;
+    }).join('');
+  } catch(err) {
+    console.error('FDC search error:', err);
+    resultsEl.innerHTML = '<div class="search-status">Search failed — check your connection</div>';
+  }
+  btn.disabled = false;
+}
+ 
+// Populate the manual form with a result and scroll to it
+function selectFDCFood(i) {
+  const food = _fdcResults[i];
+  if (!food) return;
+  document.getElementById('f-name').value    = food.name;
+  document.getElementById('f-cal').value     = food.calories;
+  document.getElementById('f-protein').value = food.protein;
+  document.getElementById('f-carbs').value   = food.carbs;
+  document.getElementById('f-fat').value     = food.fat;
+  document.getElementById('f-fiber').value   = food.fiber;
+  document.getElementById('f-sugar').value   = food.sugar;
+  // Clear search so results don't crowd the page
+  document.getElementById('fdc-results').innerHTML = '';
+  document.getElementById('fdc-search').value = '';
+  // Scroll so the user sees the filled-in form
+  document.getElementById('page-log').scrollTo({ top: 0, behavior: 'smooth' });
+  toast('Loaded: ' + food.name);
+}
+ 
 // ── SAVED FOODS ───────────────────────────────────────────────────────────────
 function renderSavedFoods() {
   const list = document.getElementById('saved-foods-list');
   if (!state.savedFoods.length) {
-    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No saved foods yet</div>';
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No saved foods yet — star a food to save it</div>';
     return;
   }
   list.innerHTML = state.savedFoods.map((food, i) => `
@@ -552,25 +652,23 @@ function renderSavedFoods() {
         <div class="saved-food-macros">${food.calories} kcal · P:${food.protein}g · C:${food.carbs}g · F:${food.fat}g · Fiber:${food.fiber}g</div>
       </div>
       <button class="use-btn" onclick="loadSavedFood(${i})">Use</button>
-      <button class="delete-btn" onclick="deleteSavedFood(${i})" title="Remove">✕</button>
+      <button class="del-btn" onclick="deleteSavedFood(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
-
 function getCurrentFormFood() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) return null;
   return {
     name,
-    meal: document.getElementById('f-meal').value,
+    meal:     document.getElementById('f-meal').value,
     calories: n(document.getElementById('f-cal').value),
-    protein: n(document.getElementById('f-protein').value),
-    carbs: n(document.getElementById('f-carbs').value),
-    fat: n(document.getElementById('f-fat').value),
-    fiber: n(document.getElementById('f-fiber').value),
-    sugar: n(document.getElementById('f-sugar').value),
+    protein:  n(document.getElementById('f-protein').value),
+    carbs:    n(document.getElementById('f-carbs').value),
+    fat:      n(document.getElementById('f-fat').value),
+    fiber:    n(document.getElementById('f-fiber').value),
+    sugar:    n(document.getElementById('f-sugar').value),
   };
 }
-
 function saveCurrentAsFavorite() {
   const food = getCurrentFormFood();
   if (!food) { toast('Enter a food name first'); return; }
@@ -581,22 +679,20 @@ function saveCurrentAsFavorite() {
   toast('★ Saved: ' + food.name);
   renderSavedFoods();
 }
-
 function loadSavedFood(idx) {
   const food = state.savedFoods[idx];
   if (!food) return;
-  document.getElementById('f-name').value = food.name;
-  document.getElementById('f-meal').value = food.meal;
-  document.getElementById('f-cal').value = food.calories;
+  document.getElementById('f-name').value    = food.name;
+  document.getElementById('f-meal').value    = food.meal;
+  document.getElementById('f-cal').value     = food.calories;
   document.getElementById('f-protein').value = food.protein;
-  document.getElementById('f-carbs').value = food.carbs;
-  document.getElementById('f-fat').value = food.fat;
-  document.getElementById('f-fiber').value = food.fiber;
-  document.getElementById('f-sugar').value = food.sugar;
-  document.getElementById('page-log').scrollTo(0,0);
+  document.getElementById('f-carbs').value   = food.carbs;
+  document.getElementById('f-fat').value     = food.fat;
+  document.getElementById('f-fiber').value   = food.fiber;
+  document.getElementById('f-sugar').value   = food.sugar;
+  document.getElementById('page-log').scrollTo({ top: 0, behavior: 'smooth' });
   toast('Loaded: ' + food.name);
 }
-
 function deleteSavedFood(idx) {
   const name = state.savedFoods[idx] ? state.savedFoods[idx].name : '';
   state.savedFoods.splice(idx, 1);
@@ -604,35 +700,37 @@ function deleteSavedFood(idx) {
   toast('Removed: ' + name);
   renderSavedFoods();
 }
-
 function addFood() {
   const name = document.getElementById('f-name').value.trim();
   if (!name) { toast('Enter a food name'); return; }
   const item = {
     name,
-    meal: document.getElementById('f-meal').value,
+    meal:     document.getElementById('f-meal').value,
     calories: n(document.getElementById('f-cal').value),
-    protein: n(document.getElementById('f-protein').value),
-    carbs: n(document.getElementById('f-carbs').value),
-    fat: n(document.getElementById('f-fat').value),
-    fiber: n(document.getElementById('f-fiber').value),
-    sugar: n(document.getElementById('f-sugar').value),
+    protein:  n(document.getElementById('f-protein').value),
+    carbs:    n(document.getElementById('f-carbs').value),
+    fat:      n(document.getElementById('f-fat').value),
+    fiber:    n(document.getElementById('f-fiber').value),
+    sugar:    n(document.getElementById('f-sugar').value),
   };
   if (!state.logs[viewDate]) state.logs[viewDate] = [];
   state.logs[viewDate].push(item);
   save();
-  document.getElementById('f-name').value = '';
+  // Clear the form
+  ['f-name','f-cal','f-protein','f-carbs','f-fat','f-fiber','f-sugar'].forEach(id => {
+    document.getElementById(id).value = '';
+  });
   toast('Added: ' + name);
   renderLogPage();
 }
-
 function deleteItem(idx) {
   if (!state.logs[viewDate]) return;
   state.logs[viewDate].splice(idx, 1);
   save();
   renderToday();
+  renderLogPage();
 }
-
+ 
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function getLast7() {
   const days = [];
@@ -642,49 +740,47 @@ function getLast7() {
   }
   return days;
 }
-
 function renderHistory() {
-  const days = getLast7();
-  const labels = days.map(fmtKeyShort);
-  const cals = days.map(k => getDayTotals(k).calories);
-  const proteins = days.map(k => getDayTotals(k).protein);
-  const carbs = days.map(k => getDayTotals(k).carbs);
-  const fats = days.map(k => getDayTotals(k).fat);
-
+  const days    = getLast7();
+  const labels  = days.map(fmtKeyShort);
+  const cals    = days.map(k => getDayTotals(k).calories);
+  const proteins= days.map(k => getDayTotals(k).protein);
+  const carbs   = days.map(k => getDayTotals(k).carbs);
+  const fats    = days.map(k => getDayTotals(k).fat);
+ 
   if (calChart) calChart.destroy();
   calChart = new Chart(document.getElementById('cal-chart'), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Calories', data: cals, backgroundColor: 'rgba(74,222,128,0.5)', borderColor: '#4ade80', borderWidth: 1, borderRadius: 4 },
-        { label: 'Goal', data: Array(7).fill(state.goals.calories), type: 'line', borderColor: 'rgba(248,113,113,0.7)', borderDash: [5,4], pointRadius: 0, borderWidth: 1.5, fill: false }
+        { label:'Calories', data:cals, backgroundColor:'rgba(74,222,128,0.5)', borderColor:'#4ade80', borderWidth:1, borderRadius:4 },
+        { label:'Goal', data:Array(7).fill(state.goals.calories), type:'line', borderColor:'rgba(248,113,113,0.7)', borderDash:[5,4], pointRadius:0, borderWidth:1.5, fill:false }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-      scales: { x: { ticks: { color:'#555b75', font:{size:11} }, grid:{color:'rgba(255,255,255,0.04)'} }, y: { ticks:{color:'#555b75',font:{size:11}}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true } } }
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales: { x:{ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true} } }
   });
-
   if (macChart) macChart.destroy();
   macChart = new Chart(document.getElementById('macro-chart'), {
     type: 'bar',
     data: {
       labels,
       datasets: [
-        { label: 'Protein', data: proteins, backgroundColor: 'rgba(96,165,250,0.7)', stack: 'a', borderRadius: 2 },
-        { label: 'Carbs', data: carbs, backgroundColor: 'rgba(251,191,36,0.7)', stack: 'a' },
-        { label: 'Fat', data: fats, backgroundColor: 'rgba(248,113,113,0.7)', stack: 'a' }
+        { label:'Protein', data:proteins, backgroundColor:'rgba(96,165,250,0.7)', stack:'a', borderRadius:2 },
+        { label:'Carbs',   data:carbs,    backgroundColor:'rgba(251,191,36,0.7)',  stack:'a' },
+        { label:'Fat',     data:fats,     backgroundColor:'rgba(248,113,113,0.7)', stack:'a' }
       ]
     },
-    options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } },
-      scales: { x: { stacked:true, ticks:{color:'#555b75',font:{size:11}}, grid:{color:'rgba(255,255,255,0.04)'} }, y: { stacked:true, ticks:{color:'#555b75',font:{size:11}}, grid:{color:'rgba(255,255,255,0.04)'}, beginAtZero:true } } }
+    options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
+      scales: { x:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true} } }
   });
-
+ 
   const hl = document.getElementById('history-list');
   hl.innerHTML = days.slice().reverse().map(k => {
-    const t = getDayTotals(k);
+    const t   = getDayTotals(k);
     const pct = state.goals.calories ? Math.round(t.calories/state.goals.calories*100) : 0;
-    const cls = pct > 105 ? 'badge-over' : pct >= 80 ? 'badge-ok' : 'badge-low';
+    const cls = pct > 105 ? 'badge-r' : pct >= 80 ? 'badge-g' : 'badge-a';
     return `<div class="history-item">
       <span class="history-date">${fmtKey(k)}</span>
       <span class="history-cal">${t.calories} kcal</span>
@@ -692,7 +788,7 @@ function renderHistory() {
     </div>`;
   }).join('');
 }
-
+ 
 // ── GOALS ─────────────────────────────────────────────────────────────────────
 function renderGoals() {
   document.getElementById('goals-list').innerHTML = Object.keys(GOAL_LABELS).map(k => `
@@ -701,7 +797,6 @@ function renderGoals() {
       <input class="goal-input" type="number" id="g-${k}" value="${state.goals[k]}" inputmode="decimal"/>
     </div>`).join('');
 }
-
 function saveGoals() {
   Object.keys(GOAL_LABELS).forEach(k => {
     const el = document.getElementById('g-'+k);
@@ -710,19 +805,18 @@ function saveGoals() {
   save();
   toast('Goals saved!');
 }
-
+ 
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function exportData() {
-  const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
+  const url  = URL.createObjectURL(blob);
+  const a    = document.createElement('a');
   a.href = url;
   a.download = 'macrotracker-backup-' + todayKey() + '.json';
   a.click();
   URL.revokeObjectURL(url);
   toast('Data exported!');
 }
-
 function importData(event) {
   const file = event.target.files[0];
   if (!file) return;
@@ -743,9 +837,9 @@ function importData(event) {
   reader.readAsText(file);
   event.target.value = '';
 }
-
+ 
 // ── INSTALL BANNER ────────────────────────────────────────────────────────────
-function showInstallBanner() {
+function dismissInstall() {
   const b = document.getElementById('install-banner');
   if (b) b.style.display = 'none';
 }
@@ -753,13 +847,16 @@ window.addEventListener('beforeinstallprompt', e => {
   const b = document.getElementById('install-banner');
   if (b) { b.style.display = 'block'; b.onclick = () => { e.prompt(); b.style.display='none'; }; }
 });
-
+ 
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js');
 }
-
+ 
 // ── INIT ──────────────────────────────────────────────────────────────────────
+// On every load: read from IDB first, fall back to localStorage.
+// savedFoods are always preserved — if an import somehow lacks them we restore
+// from the previous IDB snapshot before overwriting.
 async function init() {
   try {
     const saved = await idbGet('mt_state');
@@ -767,17 +864,19 @@ async function init() {
       state = saved;
       if (!state.savedFoods) state.savedFoods = [];
     } else {
+      // Fall back to localStorage if IDB is empty (first install or cleared)
       const ls = localStorage.getItem('mt_v2');
       if (ls) {
         const parsed = JSON.parse(ls);
         if (parsed && parsed.goals) {
           state = parsed;
           if (!state.savedFoods) state.savedFoods = [];
-          await idbSet('mt_state', state);
+          await idbSet('mt_state', state); // promote to IDB
         }
       }
     }
   } catch(e) {
+    // IDB unavailable — use localStorage only
     try {
       const ls = localStorage.getItem('mt_v2');
       if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; }
@@ -786,7 +885,7 @@ async function init() {
   viewDate = todayKey();
   renderDateLabel();
   renderToday();
-  showInstallBanner();
+  dismissInstall();
 }
 init();
 </script>
