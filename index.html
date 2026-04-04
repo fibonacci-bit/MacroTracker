@@ -304,14 +304,6 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div id="goals-list"></div>
         <button class="btn btn-primary" style="margin-top:16px" onclick="saveGoals()">Save targets</button>
       </div>
-      <div class="card">
-        <div class="card-title">About your plan</div>
-        <div style="font-size:13px;color:var(--text2);line-height:1.8;">
-          <p style="margin-bottom:8px;"><strong style="color:var(--text)">High protein</strong> preserves muscle during weight loss. Keep protein at 180–200g daily.</p>
-          <p style="margin-bottom:8px;"><strong style="color:var(--text)">Metabolism recovery</strong> — after opioid use, hormones normalize over 6–12 months. Be patient.</p>
-          <p><strong style="color:var(--text)">Tip</strong> — swap raw sugar in coffee/yogurt for stevia to cut ~150 empty calories daily.</p>
-        </div>
-      </div>
     </div>
 
   </div>
@@ -690,6 +682,9 @@ if ('serviceWorker' in navigator) {
 renderDateLabel();
 renderToday();
 showInstallBanner();
+
+// PERSIST STATE ON PAGE UNLOAD (e.g. service worker updates)
+window.addEventListener('beforeunload', function() { save(); });
 </script>
 </body>
 </html>
