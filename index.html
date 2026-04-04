@@ -304,6 +304,17 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div id="goals-list"></div>
         <button class="btn btn-primary" style="margin-top:16px" onclick="saveGoals()">Save targets</button>
       </div>
+      <div class="card">
+        <div class="card-title">Backup &amp; restore</div>
+        <div style="display:flex;gap:8px;margin-top:4px;">
+          <button class="btn btn-primary" style="flex:1" onclick="exportData()">&#8681; Export JSON</button>
+          <label class="btn" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);text-align:center;cursor:pointer;">
+            &#8679; Import JSON
+            <input type="file" accept=".json" style="display:none" onchange="importData(event)"/>
+          </label>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6;">Export saves all your logs, goals &amp; saved foods as a JSON file. Import restores from a previous export.</div>
+      </div>
     </div>
 
   </div>
@@ -332,79 +343,114 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
-// STATE
+// ── CONSTANTS ───────────────────────────────────────────────────────────────
 const DEFAULT_GOALS = { calories: 1900, protein: 190, carbs: 163, fat: 65, fiber: 30, sugar: 50 };
 const GOAL_LABELS = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
 const BAR_COLORS = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
 
-let state = (() => { try { return JSON.parse(localStorage.getItem('mt_v2') || 'null') || { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] }; } catch(e) { return { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] }; } })();
-// Ensure savedFoods exists on older stored state
-if (!state.savedFoods) state.savedFoods = [];
-
+// ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
+let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] };
 let viewDate = todayKey();
 let calChart = null, macChart = null;
 let activePage = 'today';
 
+// ── INDEXEDDB ────────────────────────────────────────────────────────────────
+const DB_NAME = 'MacroTrackerDB', DB_VER = 1, STORE = 'state';
+let _db = null;
+
+function openDB() {
+  return new Promise((res, rej) => {
+    if (_db) { res(_db); return; }
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = e => e.target.result.createObjectStore(STORE);
+    req.onsuccess = e => { _db = e.target.result; res(_db); };
+    req.onerror = e => rej(e.target.error);
+  });
+}
+
+function idbGet(key) {
+  return openDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readonly');
+    const req = tx.objectStore(STORE).get(key);
+    req.onsuccess = () => res(req.result);
+    req.onerror = e => rej(e.target.error);
+  }));
+}
+
+function idbSet(key, value) {
+  return openDB().then(db => new Promise((res, rej) => {
+    const tx = db.transaction(STORE, 'readwrite');
+    const req = tx.objectStore(STORE).put(value, key);
+    req.onsuccess = () => res();
+    req.onerror = e => rej(e.target.error);
+  }));
+}
+
+// Save state to IndexedDB (also mirror to localStorage as fallback)
+function save() {
+  idbSet('mt_state', state).catch(() => {});
+  try { localStorage.setItem('mt_v2', JSON.stringify(state)); } catch(e) {}
+}
+
+// ── HELPERS ──────────────────────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().split('T')[0]; }
 function fmtKey(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
 function fmtKeyShort(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{month:'numeric',day:'numeric'}); }
-function save() { localStorage.setItem('mt_v2', JSON.stringify(state)); }
 function n(v) { return Math.round(parseFloat(v)||0); }
 function getDayLog(k) { return state.logs[k] || []; }
 function getDayTotals(k) {
-  const t = {calories:0,protein:0,carbs:0,fat:0,fiber:0,sugar:0};
-  getDayLog(k).forEach(i => Object.keys(t).forEach(m => { t[m] += parseFloat(i[m]||0); }));
-  Object.keys(t).forEach(m => { t[m] = Math.round(t[m]); });
+  const t = { calories:0, protein:0, carbs:0, fat:0, fiber:0, sugar:0 };
+  getDayLog(k).forEach(item => Object.keys(t).forEach(key => t[key] += (item[key]||0)));
   return t;
 }
 
-// TOAST
+// ── TOAST ────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
   el.textContent = msg;
   el.classList.add('show');
-  setTimeout(() => el.classList.remove('show'), 2200);
+  setTimeout(() => el.classList.remove('show'), 2500);
 }
 
-// NAV
+// ── NAV ──────────────────────────────────────────────────────────────────────
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
   activePage = name;
-  document.getElementById('date-nav-row').style.display = ['today','log'].includes(name) ? 'flex' : 'none';
-  if (name==='today') renderToday();
-  if (name==='log') renderLogPage();
-  if (name==='history') renderHistory();
-  if (name==='goals') renderGoals();
-  document.getElementById('content').scrollTop = 0;
+  if (name === 'today') renderToday();
+  if (name === 'log') renderLogPage();
+  if (name === 'history') renderHistory();
+  if (name === 'goals') renderGoals();
 }
 
 function changeDay(d) {
-  const dt = new Date(viewDate+'T00:00:00'); dt.setDate(dt.getDate()+d);
-  const nk = dt.toISOString().split('T')[0];
-  if (nk <= todayKey()) { viewDate = nk; renderDateLabel(); if(activePage==='today') renderToday(); if(activePage==='log') renderLogPage(); }
+  const cur = new Date(viewDate+'T00:00:00');
+  cur.setDate(cur.getDate() + d);
+  viewDate = cur.toISOString().split('T')[0];
+  if (activePage === 'today') renderToday();
+  else renderLogPage();
 }
 
 function renderDateLabel() {
-  document.getElementById('date-label').textContent = viewDate === todayKey() ? 'Today' : fmtKey(viewDate);
-  document.getElementById('next-day-btn').style.opacity = viewDate === todayKey() ? '0.3' : '1';
+  const isToday = viewDate === todayKey();
+  document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
 }
 
-// PROGRESS COLOR
+// ── PROGRESS COLOR ────────────────────────────────────────────────────────────
 function pColor(pct, isLimit) {
   if (isLimit) return pct > 100 ? '#f87171' : pct > 80 ? '#fbbf24' : '#4ade80';
-  return pct >= 85 ? '#4ade80' : pct >= 50 ? '#fbbf24' : '#f87171';
+  return pct >= 100 ? '#4ade80' : pct > 60 ? '#fbbf24' : '#f87171';
 }
 
-// TODAY
+// ── TODAY ────────────────────────────────────────────────────────────────────
 function renderToday() {
   renderDateLabel();
   const t = getDayTotals(viewDate);
   const g = state.goals;
-  const calPct = Math.round((t.calories/g.calories)*100);
-  const calClass = calPct >= 85 && calPct <= 110 ? 'good' : calPct < 50 ? 'low' : 'warn';
+  const calPct = g.calories ? Math.round(t.calories/g.calories*100) : 0;
+  const calClass = calPct > 100 ? 'over' : '';
 
   document.getElementById('metric-cards').innerHTML = `
     <div class="metric-card ${calClass} full">
@@ -435,21 +481,22 @@ function renderToday() {
 
   const bars = ['calories','protein','carbs','fat','fiber','sugar'];
   document.getElementById('progress-bars').innerHTML = bars.map(k => {
-    const pct = Math.min(Math.round((t[k]/g[k])*100), 120);
-    const col = pColor(pct, k==='sugar');
+    const pct = g[k] ? Math.min(150, Math.round(t[k]/g[k]*100)) : 0;
+    const isLimit = k === 'sugar' || k === 'fat' || k === 'calories';
+    const color = pColor(pct, isLimit);
     return `<div class="prog-section">
       <div class="prog-row">
         <span class="prog-name">${GOAL_LABELS[k]}</span>
         <span class="prog-nums">${t[k]} / ${g[k]} ${k!=='calories'?'g':''}</span>
       </div>
-      <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${col}"></div></div>
+      <div class="prog-bar-bg"><div class="prog-bar-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('');
 
-  const items = getDayLog(viewDate);
   const ml = document.getElementById('meal-list');
+  const items = getDayLog(viewDate);
   if (!items.length) {
-    ml.innerHTML = '<div class="empty"><div class="empty-icon">🍽️</div>Nothing logged yet.<br>Tap Log to add your meals.</div>';
+    ml.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">No foods logged yet</div>';
     return;
   }
   ml.innerHTML = items.map((item,i) => `
@@ -461,42 +508,41 @@ function renderToday() {
         <div class="meal-macros">P:${item.protein}g · C:${item.carbs}g · F:${item.fat}g · Fiber:${item.fiber}g</div>
       </div>
       <span class="meal-cal">${item.calories}</span>
-      <button class="del-btn" onclick="deleteItem(${i})">&#215;</button>
     </div>`).join('');
 
   // streak
   let streak = 0;
-  const today = new Date(todayKey()+'T00:00:00');
-  for (let i=0; i<30; i++) {
-    const d = new Date(today); d.setDate(today.getDate()-i);
+  for (let i = 0; i < 30; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
     const k = d.toISOString().split('T')[0];
     if (getDayLog(k).length) streak++; else break;
   }
-  document.getElementById('header-streak').textContent = streak > 1 ? `${streak}d streak` : '';
+  const se = document.getElementById('streak');
+  if (se) se.textContent = streak > 1 ? `${streak} day streak 🔥` : '';
 }
 
-// LOG PAGE
+// ── LOG PAGE ──────────────────────────────────────────────────────────────────
 function renderLogPage() {
   renderDateLabel();
   renderSavedFoods();
-  const items = getDayLog(viewDate);
   const ll = document.getElementById('log-list');
-  if (!items.length) { ll.innerHTML = '<div class="empty" style="padding:20px 0">No items logged.</div>'; return; }
+  const items = getDayLog(viewDate);
+  if (!items.length) { ll.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:16px 0">No foods logged</div>'; return; }
   ll.innerHTML = items.map((item,i) => `
     <div class="meal-item">
       <div class="meal-info">
         <div class="meal-name">${item.name}</div>
         <div class="meal-macros">${item.calories} kcal · P:${item.protein}g · C:${item.carbs}g · F:${item.fat}g</div>
       </div>
-      <button class="del-btn" onclick="deleteItem(${i}); renderLogPage()">&#215;</button>
+      <button class="delete-btn" onclick="deleteItem(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
 
-// SAVED FOODS
+// ── SAVED FOODS ───────────────────────────────────────────────────────────────
 function renderSavedFoods() {
   const list = document.getElementById('saved-foods-list');
   if (!state.savedFoods.length) {
-    list.innerHTML = '<div class="empty" style="padding:16px 0;font-size:13px;">No saved foods yet.<br>Fill in the form above and tap ★ to save.</div>';
+    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No saved foods yet</div>';
     return;
   }
   list.innerHTML = state.savedFoods.map((food, i) => `
@@ -506,7 +552,7 @@ function renderSavedFoods() {
         <div class="saved-food-macros">${food.calories} kcal · P:${food.protein}g · C:${food.carbs}g · F:${food.fat}g · Fiber:${food.fiber}g</div>
       </div>
       <button class="use-btn" onclick="loadSavedFood(${i})">Use</button>
-      <button class="del-btn" style="margin-left:6px" onclick="deleteSavedFood(${i})">&#215;</button>
+      <button class="delete-btn" onclick="deleteSavedFood(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
 
@@ -528,7 +574,6 @@ function getCurrentFormFood() {
 function saveCurrentAsFavorite() {
   const food = getCurrentFormFood();
   if (!food) { toast('Enter a food name first'); return; }
-  // Avoid duplicates by name
   const exists = state.savedFoods.some(f => f.name.toLowerCase() === food.name.toLowerCase());
   if (exists) { toast('Already saved!'); return; }
   state.savedFoods.push(food);
@@ -548,13 +593,12 @@ function loadSavedFood(idx) {
   document.getElementById('f-fat').value = food.fat;
   document.getElementById('f-fiber').value = food.fiber;
   document.getElementById('f-sugar').value = food.sugar;
-  // Scroll to top of log page to show filled form
-  document.getElementById('content').scrollTop = 0;
+  document.getElementById('page-log').scrollTo(0,0);
   toast('Loaded: ' + food.name);
 }
 
 function deleteSavedFood(idx) {
-  const name = state.savedFoods[idx].name;
+  const name = state.savedFoods[idx] ? state.savedFoods[idx].name : '';
   state.savedFoods.splice(idx, 1);
   save();
   toast('Removed: ' + name);
@@ -577,7 +621,7 @@ function addFood() {
   if (!state.logs[viewDate]) state.logs[viewDate] = [];
   state.logs[viewDate].push(item);
   save();
-  ['f-name','f-cal','f-protein','f-carbs','f-fat','f-fiber','f-sugar'].forEach(id => document.getElementById(id).value='');
+  document.getElementById('f-name').value = '';
   toast('Added: ' + name);
   renderLogPage();
 }
@@ -589,17 +633,19 @@ function deleteItem(idx) {
   renderToday();
 }
 
-// HISTORY
+// ── HISTORY ───────────────────────────────────────────────────────────────────
 function getLast7() {
   const days = [];
-  const d = new Date(todayKey()+'T00:00:00');
-  for (let i=6; i>=0; i--) { const dd = new Date(d); dd.setDate(d.getDate()-i); days.push(dd.toISOString().split('T')[0]); }
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+  }
   return days;
 }
 
 function renderHistory() {
   const days = getLast7();
-  const labels = days.map(k => fmtKeyShort(k));
+  const labels = days.map(fmtKeyShort);
   const cals = days.map(k => getDayTotals(k).calories);
   const proteins = days.map(k => getDayTotals(k).protein);
   const carbs = days.map(k => getDayTotals(k).carbs);
@@ -637,8 +683,8 @@ function renderHistory() {
   const hl = document.getElementById('history-list');
   hl.innerHTML = days.slice().reverse().map(k => {
     const t = getDayTotals(k);
-    const pct = state.goals.calories > 0 ? Math.round((t.calories/state.goals.calories)*100) : 0;
-    const cls = pct >= 80 && pct <= 115 ? 'badge-g' : pct < 40 ? 'badge-r' : 'badge-a';
+    const pct = state.goals.calories ? Math.round(t.calories/state.goals.calories*100) : 0;
+    const cls = pct > 105 ? 'badge-over' : pct >= 80 ? 'badge-ok' : 'badge-low';
     return `<div class="history-item">
       <span class="history-date">${fmtKey(k)}</span>
       <span class="history-cal">${t.calories} kcal</span>
@@ -647,7 +693,7 @@ function renderHistory() {
   }).join('');
 }
 
-// GOALS
+// ── GOALS ─────────────────────────────────────────────────────────────────────
 function renderGoals() {
   document.getElementById('goals-list').innerHTML = Object.keys(GOAL_LABELS).map(k => `
     <div class="goal-item">
@@ -658,33 +704,91 @@ function renderGoals() {
 
 function saveGoals() {
   Object.keys(GOAL_LABELS).forEach(k => {
-    const v = parseFloat(document.getElementById('g-'+k).value);
-    if (!isNaN(v) && v >= 0) state.goals[k] = Math.round(v);
+    const el = document.getElementById('g-'+k);
+    if (el) state.goals[k] = n(el.value);
   });
   save();
   toast('Goals saved!');
 }
 
-// INSTALL BANNER
+// ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
+function exportData() {
+  const blob = new Blob([JSON.stringify(state, null, 2)], {type: 'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'macrotracker-backup-' + todayKey() + '.json';
+  a.click();
+  URL.revokeObjectURL(url);
+  toast('Data exported!');
+}
+
+function importData(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    try {
+      const imported = JSON.parse(e.target.result);
+      if (!imported.goals || !imported.logs) { toast('Invalid backup file'); return; }
+      if (!imported.savedFoods) imported.savedFoods = [];
+      state = imported;
+      save();
+      renderToday();
+      toast('Data restored!');
+    } catch(err) {
+      toast('Error reading file');
+    }
+  };
+  reader.readAsText(file);
+  event.target.value = '';
+}
+
+// ── INSTALL BANNER ────────────────────────────────────────────────────────────
 function showInstallBanner() {
-  const dismissed = localStorage.getItem('mt_install_dismissed');
-  const isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone;
-  if (!dismissed && !isStandalone) document.getElementById('install-banner').style.display = 'flex';
+  const b = document.getElementById('install-banner');
+  if (b) b.style.display = 'none';
 }
-function dismissInstall() { localStorage.setItem('mt_install_dismissed','1'); document.getElementById('install-banner').style.display='none'; }
+window.addEventListener('beforeinstallprompt', e => {
+  const b = document.getElementById('install-banner');
+  if (b) { b.style.display = 'block'; b.onclick = () => { e.prompt(); b.style.display='none'; }; }
+});
 
-// SERVICE WORKER
+// ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('./sw.js').catch(()=>{});
+  navigator.serviceWorker.register('./sw.js');
 }
 
-// INIT
-renderDateLabel();
-renderToday();
-showInstallBanner();
-
-// PERSIST STATE ON PAGE UNLOAD (e.g. service worker updates)
-window.addEventListener('beforeunload', function() { save(); });
+// ── INIT ──────────────────────────────────────────────────────────────────────
+async function init() {
+  try {
+    const saved = await idbGet('mt_state');
+    if (saved && saved.goals && saved.logs) {
+      state = saved;
+      if (!state.savedFoods) state.savedFoods = [];
+    } else {
+      const ls = localStorage.getItem('mt_v2');
+      if (ls) {
+        const parsed = JSON.parse(ls);
+        if (parsed && parsed.goals) {
+          state = parsed;
+          if (!state.savedFoods) state.savedFoods = [];
+          await idbSet('mt_state', state);
+        }
+      }
+    }
+  } catch(e) {
+    try {
+      const ls = localStorage.getItem('mt_v2');
+      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; }
+    } catch(e2) {}
+  }
+  viewDate = todayKey();
+  renderDateLabel();
+  renderToday();
+  showInstallBanner();
+}
+init();
 </script>
 </body>
 </html>
