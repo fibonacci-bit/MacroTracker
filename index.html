@@ -197,7 +197,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     </div>
     <!-- LOG PAGE -->
     <div class="page" id="page-log">
- 
+
       <!-- FDC FOOD SEARCH -->
       <div class="card">
         <div class="card-title">Search food database</div>
@@ -211,7 +211,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div class="search-results" id="fdc-results"></div>
       </div>
- 
+
       <!-- ADD FOOD MANUALLY -->
       <div class="card">
         <div class="card-title">Add food</div>
@@ -263,7 +263,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <button class="btn" style="background:var(--bg3);border:1px solid var(--border2);color:var(--amber);width:auto;padding:14px 16px;" onclick="saveCurrentAsFavorite()" title="Save as favorite">&#9733;</button>
         </div>
       </div>
- 
+
       <!-- SAVED FOODS CARD -->
       <div class="card">
         <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
@@ -272,13 +272,13 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div id="saved-foods-list"></div>
       </div>
- 
+
       <div class="card">
         <div class="card-title">Today's log</div>
         <div id="log-list"></div>
       </div>
     </div>
- 
+
     <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
       <div class="card">
@@ -303,7 +303,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div id="history-list"></div>
       </div>
     </div>
- 
+
     <!-- GOALS PAGE -->
     <div class="page" id="page-goals">
       <div class="info-box">
@@ -327,7 +327,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       </div>
     </div>
   </div>
- 
+
   <nav class="nav">
     <button class="nav-btn active" onclick="showPage('today',this)" id="nav-today">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -354,20 +354,21 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 const DEFAULT_GOALS = { calories: 1900, protein: 190, carbs: 163, fat: 65, fiber: 30, sugar: 50 };
 const GOAL_LABELS   = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
 const BAR_COLORS    = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
- 
+
 // ── CLOUDFLARE WORKER PROXY ──────────────────────────────────────────────────
 // All FDC API calls go through this proxy so the API key stays server-side.
 const WORKER_URL = 'https://fdc-proxy.mrcoury.workers.dev/fdc';
- 
+
 // ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
 let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [] };
 let viewDate = todayKey();
 let calChart = null, macChart = null;
 let activePage = 'today';
- 
+
 // In-memory store of the last FDC search results for selection
 let _fdcResults = [];
- 
+let _selectedFoodIdx = null;
+
 // ── INDEXEDDB ─────────────────────────────────────────────────────────────────
 // DB_NAME and DB_VER must never change — changing them would orphan existing data.
 const DB_NAME = 'MacroTrackerDB', DB_VER = 1, STORE = 'state';
@@ -405,7 +406,7 @@ function save() {
   idbSet('mt_state', state).catch(() => {});
   try { localStorage.setItem('mt_v2', JSON.stringify(state)); } catch(e) {}
 }
- 
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().split('T')[0]; }
 function fmtKey(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
@@ -417,7 +418,7 @@ function getDayTotals(k) {
   getDayLog(k).forEach(item => Object.keys(t).forEach(key => t[key] += (item[key]||0)));
   return t;
 }
- 
+
 // ── TOAST ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -425,7 +426,7 @@ function toast(msg) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 }
- 
+
 // ── NAV ───────────────────────────────────────────────────────────────────────
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -449,13 +450,13 @@ function renderDateLabel() {
   const isToday = viewDate === todayKey();
   document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
 }
- 
+
 // ── PROGRESS COLOR ────────────────────────────────────────────────────────────
 function pColor(pct, isLimit) {
   if (isLimit) return pct > 100 ? '#f87171' : pct > 80 ? '#fbbf24' : '#4ade80';
   return pct >= 100 ? '#4ade80' : pct > 60 ? '#fbbf24' : '#f87171';
 }
- 
+
 // ── TODAY ─────────────────────────────────────────────────────────────────────
 function renderToday() {
   renderDateLabel();
@@ -489,7 +490,7 @@ function renderToday() {
       <div class="metric-val" style="font-size:22px">${t.fiber}g</div>
       <div class="metric-goal">/ ${g.fiber}g</div>
     </div>`;
- 
+
   const bars = ['calories','protein','carbs','fat','fiber','sugar'];
   document.getElementById('progress-bars').innerHTML = bars.map(k => {
     const pct = g[k] ? Math.min(150, Math.round(t[k]/g[k]*100)) : 0;
@@ -503,7 +504,7 @@ function renderToday() {
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('');
- 
+
   const ml = document.getElementById('meal-list');
   const items = getDayLog(viewDate);
   if (!items.length) {
@@ -520,7 +521,7 @@ function renderToday() {
         <span class="meal-cal">${item.calories}</span>
       </div>`).join('');
   }
- 
+
   // Streak counter
   let streak = 0;
   for (let i = 0; i < 30; i++) {
@@ -531,7 +532,7 @@ function renderToday() {
   const se = document.getElementById('header-streak');
   if (se) se.textContent = streak > 1 ? `${streak} day streak 🔥` : '';
 }
- 
+
 // ── LOG PAGE ──────────────────────────────────────────────────────────────────
 function renderLogPage() {
   renderDateLabel();
@@ -551,7 +552,7 @@ function renderLogPage() {
       <button class="del-btn" onclick="deleteItem(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
- 
+
 // ── FDC FOOD SEARCH ───────────────────────────────────────────────────────────
 // Extract a nutrient value from the FDC foodNutrients array by nutrient ID.
 // The search endpoint uses numeric nutrientId; the food detail endpoint uses
@@ -565,34 +566,40 @@ function getNutrient(nutrients, id) {
   );
   return found ? Math.round(parseFloat(found.value) || 0) : 0;
 }
- 
+
 async function searchFDC() {
   const query = document.getElementById('fdc-search').value.trim();
   if (!query) { toast('Enter a food to search'); return; }
- 
+
   const resultsEl = document.getElementById('fdc-results');
   const btn = document.getElementById('fdc-search-btn');
   btn.disabled = true;
   resultsEl.innerHTML = '<div class="search-status"><span class="search-spinner"></span>Searching…</div>';
   _fdcResults = [];
- 
+
   try {
     const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
- 
+
     if (!data.foods || !data.foods.length) {
       resultsEl.innerHTML = '<div class="search-status">No results found</div>';
       btn.disabled = false;
       return;
     }
- 
+
     _fdcResults = data.foods.map(food => ({
-      name:     food.description,
-      brand:    food.brandName || '',
-      dataType: food.dataType || '',
-      serving:  food.servingSize ? `${food.servingSize}${food.servingSizeUnit || 'g'}` : '',
+      name:        food.description,
+      brand:       food.brandName || '',
+      dataType:    food.dataType || '',
+      // servingSize is the amount the nutrient values are based on (grams).
+      // SR Legacy foods report nutrients per 100 g; branded foods report per
+      // their labeled serving size. We store whichever is present so the
+      // quantity panel can show the right default.
+      servingSize: food.servingSize || 100,
+      servingUnit: food.servingSizeUnit || 'g',
+      serving:     food.servingSize ? `${food.servingSize}${food.servingSizeUnit || 'g'}` : '100g',
       calories: getNutrient(food.foodNutrients, 1008),
       protein:  getNutrient(food.foodNutrients, 1003),
       carbs:    getNutrient(food.foodNutrients, 1005),
@@ -600,7 +607,7 @@ async function searchFDC() {
       fiber:    getNutrient(food.foodNutrients, 1079),
       sugar:    getNutrient(food.foodNutrients, 2000) || getNutrient(food.foodNutrients, 1063),
     }));
- 
+
     resultsEl.innerHTML = _fdcResults.map((f, i) => {
       const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
       return `<div class="search-result" onclick="selectFDCFood(${i})">
@@ -618,26 +625,126 @@ async function searchFDC() {
   }
   btn.disabled = false;
 }
- 
-// Populate the manual form with a result and scroll to it
+
+// ── FDC QUANTITY PANEL ────────────────────────────────────────────────────────
+// When a search result is tapped we show a quantity input + live macro preview
+// instead of immediately filling the form. This lets the user say "I had 180g"
+// and get proportionally scaled macros.
+
 function selectFDCFood(i) {
+  _selectedFoodIdx = i;
   const food = _fdcResults[i];
   if (!food) return;
+
+  const resultsEl = document.getElementById('fdc-results');
+  resultsEl.innerHTML = `
+    <div style="padding-top:4px">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${food.name}</div>
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:14px">
+        ${food.brand ? food.brand + ' · ' : ''}${food.dataType} · base serving: ${food.serving}
+      </div>
+      <div class="form-group">
+        <label class="form-label">How much did you have? (${food.servingUnit})</label>
+        <input class="form-input" type="number" id="qty-input" value="${food.servingSize}"
+          inputmode="decimal" oninput="updateQtyPreview()" style="width:50%"/>
+      </div>
+      <div id="qty-preview"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmQuantity()">Fill form →</button>
+        <button class="btn" style="flex:0 0 auto;background:var(--bg3);border:1px solid var(--border2);color:var(--text2);padding:14px 16px" onclick="backToResults()">← Back</button>
+      </div>
+    </div>`;
+  updateQtyPreview();
+}
+
+function _scaleNutrients(food, qty) {
+  const ratio = qty / (food.servingSize || 100);
+  return {
+    calories: Math.round(food.calories * ratio),
+    protein:  Math.round(food.protein  * ratio),
+    carbs:    Math.round(food.carbs    * ratio),
+    fat:      Math.round(food.fat      * ratio),
+    fiber:    Math.round(food.fiber    * ratio),
+    sugar:    Math.round(food.sugar    * ratio),
+  };
+}
+
+function updateQtyPreview() {
+  const food = _fdcResults[_selectedFoodIdx];
+  if (!food) return;
+  const qty = parseFloat(document.getElementById('qty-input').value) || 0;
+  const m = _scaleNutrients(food, qty);
+  document.getElementById('qty-preview').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+        <div>
+          <div style="font-size:20px;font-weight:600;color:var(--accent);font-family:var(--mono)">${m.calories}</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">kcal</div>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:#60a5fa;font-family:var(--mono)">${m.protein}g</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">protein</div>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:#fbbf24;font-family:var(--mono)">${m.carbs}g</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">carbs</div>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:#f87171;font-family:var(--mono)">${m.fat}g</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">fat</div>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:#a78bfa;font-family:var(--mono)">${m.fiber}g</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">fiber</div>
+        </div>
+        <div>
+          <div style="font-size:20px;font-weight:600;color:#f472b6;font-family:var(--mono)">${m.sugar}g</div>
+          <div style="font-size:10px;color:var(--text3);margin-top:2px">sugar</div>
+        </div>
+      </div>
+    </div>`;
+}
+
+function confirmQuantity() {
+  const food = _fdcResults[_selectedFoodIdx];
+  if (!food) return;
+  const qty = parseFloat(document.getElementById('qty-input').value) || food.servingSize;
+  const m = _scaleNutrients(food, qty);
+
   document.getElementById('f-name').value    = food.name;
-  document.getElementById('f-cal').value     = food.calories;
-  document.getElementById('f-protein').value = food.protein;
-  document.getElementById('f-carbs').value   = food.carbs;
-  document.getElementById('f-fat').value     = food.fat;
-  document.getElementById('f-fiber').value   = food.fiber;
-  document.getElementById('f-sugar').value   = food.sugar;
-  // Clear search so results don't crowd the page
+  document.getElementById('f-cal').value     = m.calories;
+  document.getElementById('f-protein').value = m.protein;
+  document.getElementById('f-carbs').value   = m.carbs;
+  document.getElementById('f-fat').value     = m.fat;
+  document.getElementById('f-fiber').value   = m.fiber;
+  document.getElementById('f-sugar').value   = m.sugar;
+
+  // Clear search state
   document.getElementById('fdc-results').innerHTML = '';
   document.getElementById('fdc-search').value = '';
-  // Scroll so the user sees the filled-in form
+  _fdcResults = [];
+  _selectedFoodIdx = null;
+
   document.getElementById('page-log').scrollTo({ top: 0, behavior: 'smooth' });
   toast('Loaded: ' + food.name);
 }
- 
+
+function backToResults() {
+  _selectedFoodIdx = null;
+  const resultsEl = document.getElementById('fdc-results');
+  resultsEl.innerHTML = _fdcResults.map((f, i) => {
+    const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
+    return `<div class="search-result" onclick="selectFDCFood(${i})">
+      <div class="search-result-info">
+        <div class="search-result-name">${f.name}</div>
+        ${sub ? `<div class="search-result-sub">${sub}</div>` : ''}
+        <div class="search-result-macros">P:${f.protein}g · C:${f.carbs}g · F:${f.fat}g · Fiber:${f.fiber}g</div>
+      </div>
+      <div class="search-result-cal">${f.calories}</div>
+    </div>`;
+  }).join('');
+}
+
 // ── SAVED FOODS ───────────────────────────────────────────────────────────────
 function renderSavedFoods() {
   const list = document.getElementById('saved-foods-list');
@@ -730,7 +837,7 @@ function deleteItem(idx) {
   renderToday();
   renderLogPage();
 }
- 
+
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function getLast7() {
   const days = [];
@@ -747,7 +854,7 @@ function renderHistory() {
   const proteins= days.map(k => getDayTotals(k).protein);
   const carbs   = days.map(k => getDayTotals(k).carbs);
   const fats    = days.map(k => getDayTotals(k).fat);
- 
+
   if (calChart) calChart.destroy();
   calChart = new Chart(document.getElementById('cal-chart'), {
     type: 'bar',
@@ -775,7 +882,7 @@ function renderHistory() {
     options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
       scales: { x:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true} } }
   });
- 
+
   const hl = document.getElementById('history-list');
   hl.innerHTML = days.slice().reverse().map(k => {
     const t   = getDayTotals(k);
@@ -788,7 +895,7 @@ function renderHistory() {
     </div>`;
   }).join('');
 }
- 
+
 // ── GOALS ─────────────────────────────────────────────────────────────────────
 function renderGoals() {
   document.getElementById('goals-list').innerHTML = Object.keys(GOAL_LABELS).map(k => `
@@ -805,7 +912,7 @@ function saveGoals() {
   save();
   toast('Goals saved!');
 }
- 
+
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function exportData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
@@ -837,7 +944,7 @@ function importData(event) {
   reader.readAsText(file);
   event.target.value = '';
 }
- 
+
 // ── INSTALL BANNER ────────────────────────────────────────────────────────────
 function dismissInstall() {
   const b = document.getElementById('install-banner');
@@ -847,12 +954,12 @@ window.addEventListener('beforeinstallprompt', e => {
   const b = document.getElementById('install-banner');
   if (b) { b.style.display = 'block'; b.onclick = () => { e.prompt(); b.style.display='none'; }; }
 });
- 
+
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js');
 }
- 
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 // On every load: read from IDB first, fall back to localStorage.
 // savedFoods are always preserved — if an import somehow lacks them we restore
