@@ -237,7 +237,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     </div>
     <!-- LOG PAGE -->
     <div class="page" id="page-log">
- 
+
       <!-- FDC FOOD SEARCH -->
       <div class="card">
         <div class="card-title">Search food database</div>
@@ -252,7 +252,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div class="search-results" id="fdc-results"></div>
       </div>
- 
+
       <!-- ADD FOOD MANUALLY -->
       <div class="card">
         <div class="card-title">Add food</div>
@@ -304,7 +304,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <button class="btn" style="background:var(--bg3);border:1px solid var(--border2);color:var(--amber);width:auto;padding:14px 20px;font-size:17px;gap:6px;" onclick="saveCurrentAsFavorite()" title="Save as favorite">&#9733; Favorite</button>
         </div>
       </div>
- 
+
       <!-- SAVED FOODS CARD -->
       <div class="card">
         <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
@@ -312,13 +312,13 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div id="saved-foods-list"></div>
       </div>
- 
+
       <div class="card">
         <div class="card-title">Today's log</div>
         <div id="log-list"></div>
       </div>
     </div>
- 
+
     <!-- HISTORY PAGE -->
     <div class="page" id="page-history">
       <div class="card">
@@ -343,14 +343,14 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div id="history-list"></div>
       </div>
     </div>
- 
+
     <!-- GOALS PAGE -->
     <div class="page" id="page-goals">
- 
+
       <!-- 1. PROFILE INPUTS -->
       <div class="card">
         <div class="card-title">Your profile</div>
- 
+
         <!-- Sex -->
         <div class="form-group">
           <label class="form-label">Sex</label>
@@ -359,7 +359,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
             <button class="sex-btn" id="sex-female" onclick="setSex('female')">Female</button>
           </div>
         </div>
- 
+
         <!-- Age + Height -->
         <div class="form-grid form-group">
           <div>
@@ -374,7 +374,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
             </div>
           </div>
         </div>
- 
+
         <!-- Weights -->
         <div class="form-grid form-group">
           <div>
@@ -386,13 +386,13 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
             <input class="form-input" type="number" id="p-target" inputmode="decimal" placeholder="e.g. 185"/>
           </div>
         </div>
- 
+
         <!-- Activity -->
         <div class="form-group">
           <label class="form-label">Activity level</label>
           <select class="form-input" id="p-activity"></select>
         </div>
- 
+
         <!-- Loss rate -->
         <div class="form-group">
           <label class="form-label">Weight loss rate</label>
@@ -403,10 +403,10 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
             <button class="seg-btn" data-rate="2"    onclick="setLossRate(2)"><span class="seg-rate">2</span>lbs/wk<br>Max</button>
           </div>
         </div>
- 
+
         <button class="btn btn-primary" onclick="calculateGoals()">Calculate recommendations</button>
       </div>
- 
+
       <!-- 2. RECOMMENDATIONS (hidden until calculated) -->
       <div class="card" id="rec-card" style="display:none">
         <div class="card-title">Recommended targets</div>
@@ -415,21 +415,21 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <button class="btn btn-primary" onclick="applyRecommendations()">Apply to my daily targets</button>
         <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6">Tweak any value above before applying. Applying won't affect your logs or saved foods.</div>
       </div>
- 
+
       <!-- 3. PROGRESS TO GOAL (hidden until calculated) -->
       <div class="card" id="progress-card" style="display:none">
         <div class="card-title">Progress to goal</div>
         <div class="goal-summary" id="goal-summary"></div>
         <div class="goal-chart-wrap"><canvas id="goal-chart"></canvas></div>
       </div>
- 
+
       <!-- 4. DAILY TARGETS (always editable) -->
       <div class="card">
         <div class="card-title">Daily targets</div>
         <div id="goals-list"></div>
         <button class="btn btn-primary" style="margin-top:16px" onclick="saveGoals()">Save targets</button>
       </div>
- 
+
       <!-- 5. BACKUP / RESTORE -->
       <div class="card">
         <div class="card-title">Backup &amp; restore</div>
@@ -444,7 +444,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       </div>
     </div>
   </div>
- 
+
   <nav class="nav">
     <button class="nav-btn active" onclick="showPage('today',this)" id="nav-today">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -464,7 +464,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     </button>
   </nav>
 </div>
- 
+
 <!-- BARCODE SCANNER OVERLAY -->
 <div class="scanner-overlay" id="scanner-overlay" style="display:none">
   <div class="scanner-header">
@@ -485,7 +485,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     <span class="search-spinner"></span><span id="scanner-status-text">Starting camera…</span>
   </div>
 </div>
- 
+
 <div class="toast" id="toast"></div>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
 <script>
@@ -501,22 +501,22 @@ const ACTIVITY_OPTIONS = [
 ];
 const GOAL_LABELS   = { calories: 'Calories (kcal)', protein: 'Protein (g)', carbs: 'Carbs (g)', fat: 'Fat (g)', fiber: 'Fiber (g)', sugar: 'Sugar (g)' };
 const BAR_COLORS    = { calories: '#4ade80', protein: '#60a5fa', carbs: '#fbbf24', fat: '#f87171', fiber: '#a78bfa', sugar: '#f472b6' };
- 
+
 // ── CLOUDFLARE WORKER PROXY ──────────────────────────────────────────────────
 // FDC calls go to /fdc/*, Open Food Facts barcode calls go to /off/{barcode}.
 const WORKER_URL  = 'https://fdc-proxy.mrcoury.workers.dev/fdc';
 const WORKER_BASE = 'https://fdc-proxy.mrcoury.workers.dev'; // base for /off/ route
- 
+
 // ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
 let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [], profile: {...DEFAULT_PROFILE} };
 let viewDate = todayKey();
 let calChart = null, macChart = null, goalChart = null;
 let activePage = 'today';
- 
+
 // In-memory store of the last FDC search results for selection
 let _fdcResults = [];
 let _selectedFoodIdx = null;
- 
+
 // ── INDEXEDDB ─────────────────────────────────────────────────────────────────
 // DB_NAME and DB_VER must never change — changing them would orphan existing data.
 const DB_NAME = 'MacroTrackerDB', DB_VER = 1, STORE = 'state';
@@ -554,7 +554,7 @@ function save() {
   idbSet('mt_state', state).catch(() => {});
   try { localStorage.setItem('mt_v2', JSON.stringify(state)); } catch(e) {}
 }
- 
+
 // ── HELPERS ───────────────────────────────────────────────────────────────────
 function todayKey() { return new Date().toISOString().split('T')[0]; }
 function fmtKey(k) { const d = new Date(k+'T00:00:00'); return d.toLocaleDateString('en-US',{weekday:'short',month:'short',day:'numeric'}); }
@@ -566,7 +566,7 @@ function getDayTotals(k) {
   getDayLog(k).forEach(item => Object.keys(t).forEach(key => t[key] += (item[key]||0)));
   return t;
 }
- 
+
 // ── TOAST ─────────────────────────────────────────────────────────────────────
 function toast(msg) {
   const el = document.getElementById('toast');
@@ -574,7 +574,7 @@ function toast(msg) {
   el.classList.add('show');
   setTimeout(() => el.classList.remove('show'), 2500);
 }
- 
+
 // ── NAV ───────────────────────────────────────────────────────────────────────
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
@@ -598,13 +598,13 @@ function renderDateLabel() {
   const isToday = viewDate === todayKey();
   document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
 }
- 
+
 // ── PROGRESS COLOR ────────────────────────────────────────────────────────────
 function pColor(pct, isLimit) {
   if (isLimit) return pct > 100 ? '#f87171' : pct > 80 ? '#fbbf24' : '#4ade80';
   return pct >= 100 ? '#4ade80' : pct > 60 ? '#fbbf24' : '#f87171';
 }
- 
+
 // ── TODAY ─────────────────────────────────────────────────────────────────────
 function renderToday() {
   renderDateLabel();
@@ -638,7 +638,7 @@ function renderToday() {
       <div class="metric-val" style="font-size:22px">${t.fiber}g</div>
       <div class="metric-goal">/ ${g.fiber}g</div>
     </div>`;
- 
+
   const bars = ['calories','protein','carbs','fat','fiber','sugar'];
   document.getElementById('progress-bars').innerHTML = bars.map(k => {
     const pct = g[k] ? Math.min(150, Math.round(t[k]/g[k]*100)) : 0;
@@ -652,7 +652,7 @@ function renderToday() {
       <div class="prog-bar"><div class="prog-fill" style="width:${pct}%;background:${color}"></div></div>
     </div>`;
   }).join('');
- 
+
   const ml = document.getElementById('meal-list');
   const items = getDayLog(viewDate);
   if (!items.length) {
@@ -669,7 +669,7 @@ function renderToday() {
         <span class="meal-cal">${item.calories}</span>
       </div>`).join('');
   }
- 
+
   // Streak counter
   let streak = 0;
   for (let i = 0; i < 30; i++) {
@@ -680,7 +680,7 @@ function renderToday() {
   const se = document.getElementById('header-streak');
   if (se) se.textContent = streak > 1 ? `${streak} day streak 🔥` : '';
 }
- 
+
 // ── LOG PAGE ──────────────────────────────────────────────────────────────────
 function renderLogPage() {
   renderDateLabel();
@@ -700,7 +700,7 @@ function renderLogPage() {
       <button class="del-btn" onclick="deleteItem(${i})" title="Remove">✕</button>
     </div>`).join('');
 }
- 
+
 // ── FDC FOOD SEARCH ───────────────────────────────────────────────────────────
 // Extract a nutrient value from the FDC foodNutrients array by nutrient ID.
 // The search endpoint uses numeric nutrientId; the food detail endpoint uses
@@ -714,29 +714,29 @@ function getNutrient(nutrients, id) {
   );
   return found ? Math.round(parseFloat(found.value) || 0) : 0;
 }
- 
+
 async function searchFDC() {
   const query = document.getElementById('fdc-search').value.trim();
   if (!query) { toast('Enter a food to search'); return; }
- 
+
   const resultsEl = document.getElementById('fdc-results');
   const btn = document.getElementById('fdc-search-btn');
   btn.disabled = true;
   resultsEl.innerHTML = '<div class="search-status"><span class="search-spinner"></span>Searching…</div>';
   _fdcResults = [];
- 
+
   try {
     const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
- 
+
     if (!data.foods || !data.foods.length) {
       resultsEl.innerHTML = '<div class="search-status">No results found</div>';
       btn.disabled = false;
       return;
     }
- 
+
     _fdcResults = data.foods.map(food => ({
       name:        food.description,
       brand:       food.brandName || '',
@@ -755,7 +755,7 @@ async function searchFDC() {
       fiber:    getNutrient(food.foodNutrients, 1079),
       sugar:    getNutrient(food.foodNutrients, 2000) || getNutrient(food.foodNutrients, 1063),
     }));
- 
+
     resultsEl.innerHTML = _fdcResults.map((f, i) => {
       const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
       return `<div class="search-result" onclick="selectFDCFood(${i})">
@@ -773,17 +773,17 @@ async function searchFDC() {
   }
   btn.disabled = false;
 }
- 
+
 // ── FDC QUANTITY PANEL ────────────────────────────────────────────────────────
 // When a search result is tapped we show a quantity input + live macro preview
 // instead of immediately filling the form. This lets the user say "I had 180g"
 // and get proportionally scaled macros.
- 
+
 function selectFDCFood(i) {
   _selectedFoodIdx = i;
   const food = _fdcResults[i];
   if (!food) return;
- 
+
   const resultsEl = document.getElementById('fdc-results');
   resultsEl.innerHTML = `
     <div style="padding-top:4px">
@@ -804,7 +804,7 @@ function selectFDCFood(i) {
     </div>`;
   updateQtyPreview();
 }
- 
+
 function _scaleNutrients(food, qty) {
   const ratio = qty / (food.servingSize || 100);
   return {
@@ -816,7 +816,7 @@ function _scaleNutrients(food, qty) {
     sugar:    Math.round(food.sugar    * ratio),
   };
 }
- 
+
 function updateQtyPreview() {
   const food = _fdcResults[_selectedFoodIdx];
   if (!food) return;
@@ -852,13 +852,13 @@ function updateQtyPreview() {
       </div>
     </div>`;
 }
- 
+
 function confirmQuantity() {
   const food = _fdcResults[_selectedFoodIdx];
   if (!food) return;
   const qty = parseFloat(document.getElementById('qty-input').value) || food.servingSize;
   const m = _scaleNutrients(food, qty);
- 
+
   document.getElementById('f-name').value    = food.name;
   document.getElementById('f-cal').value     = m.calories;
   document.getElementById('f-protein').value = m.protein;
@@ -866,17 +866,17 @@ function confirmQuantity() {
   document.getElementById('f-fat').value     = m.fat;
   document.getElementById('f-fiber').value   = m.fiber;
   document.getElementById('f-sugar').value   = m.sugar;
- 
+
   // Clear search state
   document.getElementById('fdc-results').innerHTML = '';
   document.getElementById('fdc-search').value = '';
   _fdcResults = [];
   _selectedFoodIdx = null;
- 
+
   document.getElementById('page-log').scrollTo({ top: 0, behavior: 'smooth' });
   toast('Loaded: ' + food.name);
 }
- 
+
 function backToResults() {
   _selectedFoodIdx = null;
   const resultsEl = document.getElementById('fdc-results');
@@ -892,39 +892,46 @@ function backToResults() {
     </div>`;
   }).join('');
 }
- 
+
 // ── BARCODE SCANNER ───────────────────────────────────────────────────────────
 let _scannerStream  = null;
 let _scannerActive  = false;
 let _zxingReader    = null;
 let _zxingLoaded    = false;
- 
+
 function setScannerStatus(text, spinning) {
   document.getElementById('scanner-status-text').textContent = text;
   const spinner = document.querySelector('#scanner-status .search-spinner');
   if (spinner) spinner.style.display = spinning ? 'inline-block' : 'none';
 }
- 
+
 async function openScanner() {
-  // Make sure we're on the Log page so results land in the right place
   showPage('log', document.getElementById('nav-log'));
   document.getElementById('scanner-overlay').style.display = 'flex';
   setScannerStatus('Starting camera…', true);
   _scannerActive = true;
- 
+
   try {
-    _scannerStream = await navigator.mediaDevices.getUserMedia({
-      video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
-    });
-    const video = document.getElementById('scanner-video');
-    video.srcObject = _scannerStream;
-    await video.play();
- 
     if ('BarcodeDetector' in window) {
+      // Native path: open our own stream, wait until video is playing, then scan
+      _scannerStream = await navigator.mediaDevices.getUserMedia({
+        video: { facingMode: { ideal: 'environment' }, width: { ideal: 1280 } }
+      });
+      const video = document.getElementById('scanner-video');
+      video.srcObject = _scannerStream;
+
+      // Wait until the video has actual frame data before detecting
+      await new Promise(resolve => {
+        if (video.readyState >= 2) { resolve(); return; }
+        video.addEventListener('loadeddata', resolve, { once: true });
+      });
+      await video.play();
+
       setScannerStatus('Point at a barcode…', false);
       startNativeScanner(video);
     } else {
-      await startZXingScanner(video);
+      // ZXing path: let ZXing manage the camera stream itself
+      await startZXingScanner();
     }
   } catch(err) {
     const msg = err.name === 'NotAllowedError'
@@ -933,50 +940,60 @@ async function openScanner() {
     setScannerStatus(msg, false);
   }
 }
- 
-// Native BarcodeDetector (Chrome, Safari 17+)
+
+// Native BarcodeDetector (Chrome desktop/Android, Safari 17+)
+// No format list — detect whatever the browser supports, maximises compatibility
 function startNativeScanner(video) {
-  const detector = new BarcodeDetector({
-    formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128', 'code_39']
-  });
+  const detector = new BarcodeDetector();
   async function tick() {
     if (!_scannerActive) return;
-    try {
-      const results = await detector.detect(video);
-      if (results.length > 0) {
-        const code = results[0].rawValue;
-        closeScanner();
-        lookupBarcode(code);
-        return;
-      }
-    } catch(e) {}
-    requestAnimationFrame(tick);
+    // Only attempt detection when the video has a current frame
+    if (video.readyState >= 2 && !video.paused) {
+      try {
+        const results = await detector.detect(video);
+        if (results.length > 0) {
+          const code = results[0].rawValue;
+          closeScanner();
+          lookupBarcode(code);
+          return;
+        }
+      } catch(e) {}
+    }
+    setTimeout(() => requestAnimationFrame(tick), 150); // ~6 fps is plenty
   }
   requestAnimationFrame(tick);
 }
- 
-// ZXing fallback (Firefox, older devices) — loaded on demand
-async function startZXingScanner(video) {
+
+// ZXing fallback — let ZXing open and manage the camera, avoids stream-reuse issues
+async function startZXingScanner() {
   if (!_zxingLoaded) {
     setScannerStatus('Loading scanner library…', true);
     await new Promise((resolve, reject) => {
       const s = document.createElement('script');
       s.src = 'https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js';
       s.onload = () => { _zxingLoaded = true; resolve(); };
-      s.onerror = reject;
+      s.onerror = () => reject(new Error('Failed to load ZXing'));
       document.head.appendChild(s);
     });
   }
+
   setScannerStatus('Point at a barcode…', false);
   _zxingReader = new ZXing.BrowserMultiFormatReader();
-  _zxingReader.decodeFromStream(_scannerStream, video, (result, err) => {
+
+  // Find the rear-facing camera if possible
+  const devices = await _zxingReader.listVideoInputDevices().catch(() => []);
+  const rear = devices.find(d => /back|rear|environment/i.test(d.label));
+  const deviceId = rear ? rear.deviceId : undefined;
+
+  // decodeFromVideoDevice manages the camera stream internally
+  _zxingReader.decodeFromVideoDevice(deviceId, 'scanner-video', (result, err) => {
     if (result && _scannerActive) {
       closeScanner();
       lookupBarcode(result.getText());
     }
   });
 }
- 
+
 function closeScanner() {
   _scannerActive = false;
   if (_scannerStream) {
@@ -987,21 +1004,23 @@ function closeScanner() {
     try { _zxingReader.reset(); } catch(e) {}
     _zxingReader = null;
   }
+  const video = document.getElementById('scanner-video');
+  if (video) { video.srcObject = null; }
   document.getElementById('scanner-overlay').style.display = 'none';
 }
- 
+
 // ── OPEN FOOD FACTS LOOKUP ────────────────────────────────────────────────────
 async function lookupBarcode(code) {
   const resultsEl = document.getElementById('fdc-results');
   document.getElementById('fdc-search').value = '';
   resultsEl.innerHTML = `<div class="search-status"><span class="search-spinner"></span>Looking up barcode ${code}…</div>`;
   _fdcResults = [];
- 
+
   try {
     const res = await fetch(`${WORKER_BASE}/off/${code}`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
- 
+
     if (!data.product || data.status !== 1) {
       resultsEl.innerHTML = `
         <div class="search-status">Product not found in database</div>
@@ -1011,7 +1030,7 @@ async function lookupBarcode(code) {
       document.getElementById('fdc-search').value = code;
       return;
     }
- 
+
     const food = parseOFFProduct(data.product);
     _fdcResults = [food];
     selectFDCFood(0); // go straight to quantity panel
@@ -1020,17 +1039,17 @@ async function lookupBarcode(code) {
     resultsEl.innerHTML = `<div class="search-status">Lookup failed — check your connection</div>`;
   }
 }
- 
+
 function parseOFFProduct(p) {
   const nm = p.nutriments || {};
- 
+
   // Prefer per-serving values; fall back to per-100g
   const hasServing = nm['energy-kcal_serving'] != null || nm['energy_serving'] != null;
   const sfx = hasServing ? '_serving' : '_100g';
- 
+
   // Calories: use energy-kcal field, or convert kJ (÷ 4.184)
   const kcal = nm['energy-kcal' + sfx] ?? Math.round((nm['energy' + sfx] ?? 0) / 4.184);
- 
+
   // Use the clean serving_quantity / serving_quantity_unit fields where available
   // (avoids misreading strings like "1 package (24.8 g)" as 1 g)
   let servingSize = 100, servingUnit = 'g';
@@ -1044,7 +1063,7 @@ function parseOFFProduct(p) {
       if (m) { servingSize = parseFloat(m[1]); servingUnit = m[2].toLowerCase(); }
     }
   }
- 
+
   return {
     name:        p.product_name || p.abbreviated_product_name || 'Unknown product',
     brand:       p.brands        || '',
@@ -1060,7 +1079,7 @@ function parseOFFProduct(p) {
     sugar:    Math.round(nm['sugars'          + sfx] || 0),
   };
 }
- 
+
 // ── SAVED FOODS ───────────────────────────────────────────────────────────────
 function renderSavedFoods() {
   const list = document.getElementById('saved-foods-list');
@@ -1153,7 +1172,7 @@ function deleteItem(idx) {
   renderToday();
   renderLogPage();
 }
- 
+
 // ── HISTORY ───────────────────────────────────────────────────────────────────
 function getLast7() {
   const days = [];
@@ -1170,7 +1189,7 @@ function renderHistory() {
   const proteins= days.map(k => getDayTotals(k).protein);
   const carbs   = days.map(k => getDayTotals(k).carbs);
   const fats    = days.map(k => getDayTotals(k).fat);
- 
+
   if (calChart) calChart.destroy();
   calChart = new Chart(document.getElementById('cal-chart'), {
     type: 'bar',
@@ -1198,7 +1217,7 @@ function renderHistory() {
     options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}},
       scales: { x:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true} } }
   });
- 
+
   const hl = document.getElementById('history-list');
   hl.innerHTML = days.slice().reverse().map(k => {
     const t   = getDayTotals(k);
@@ -1211,9 +1230,9 @@ function renderHistory() {
     </div>`;
   }).join('');
 }
- 
+
 // ── GOALS ─────────────────────────────────────────────────────────────────────
- 
+
 // Helper: read the profile inputs into an object (without saving yet)
 function readProfileInputs() {
   return {
@@ -1227,26 +1246,26 @@ function readProfileInputs() {
     lossRate:  state.profile.lossRate || 1.5,
   };
 }
- 
+
 function setSex(sex) {
   document.getElementById('sex-male').classList.toggle('active',  sex === 'male');
   document.getElementById('sex-female').classList.toggle('active', sex === 'female');
 }
- 
+
 function setLossRate(rate) {
   document.querySelectorAll('.seg-btn').forEach(b => {
     b.classList.toggle('active', parseFloat(b.dataset.rate) === rate);
   });
   state.profile.lossRate = rate;
 }
- 
+
 function renderGoals() {
   // ── populate activity select ──
   const actSel = document.getElementById('p-activity');
   actSel.innerHTML = ACTIVITY_OPTIONS.map(o =>
     `<option value="${o.value}">${o.label} — ${o.sub}</option>`
   ).join('');
- 
+
   // ── restore saved profile values ──
   const p = state.profile || DEFAULT_PROFILE;
   setSex(p.sex);
@@ -1257,7 +1276,7 @@ function renderGoals() {
   document.getElementById('p-target').value = p.targetLbs || '';
   actSel.value = p.activity || 1.2;
   setLossRate(p.lossRate || 1.5);
- 
+
   // ── daily targets (always editable) ──
   document.getElementById('goals-list').innerHTML = Object.keys(GOAL_LABELS).map(k => `
     <div class="goal-item">
@@ -1265,7 +1284,7 @@ function renderGoals() {
       <input class="goal-input" type="number" id="g-${k}" value="${state.goals[k]}" inputmode="decimal"/>
     </div>`).join('');
 }
- 
+
 function saveGoals() {
   Object.keys(GOAL_LABELS).forEach(k => {
     const el = document.getElementById('g-'+k);
@@ -1274,7 +1293,7 @@ function saveGoals() {
   save();
   toast('Targets saved!');
 }
- 
+
 // ── CALCULATOR ────────────────────────────────────────────────────────────────
 function calcRecommendations(p) {
   const kg  = p.weightLbs * 0.453592;
@@ -1285,7 +1304,7 @@ function calcRecommendations(p) {
   const tdee    = Math.round(bmr * p.activity);
   const deficit = Math.round(p.lossRate * 500);
   const calories = Math.max(1200, tdee - deficit);
- 
+
   // Macros
   const protein = Math.round(p.targetLbs * 1);          // 1 g per lb target weight
   const fat     = Math.round(p.weightLbs * 0.35);        // 0.35 g per lb current weight
@@ -1295,35 +1314,35 @@ function calcRecommendations(p) {
   const carbs  = Math.round(carbCals / 4);
   const fiber  = Math.round(calories / 1000 * 14);
   const sugar  = Math.round(calories * 0.10 / 4);
- 
+
   const lbsToLose   = Math.max(0, p.weightLbs - p.targetLbs);
   const weeksToGoal = p.lossRate > 0 ? Math.ceil(lbsToLose / p.lossRate) : 0;
- 
+
   return { bmr: Math.round(bmr), tdee, deficit, calories, protein, carbs, fat, fiber, sugar, weeksToGoal, lbsToLose };
 }
- 
+
 function calculateGoals() {
   // Validate
   const p = readProfileInputs();
   state.profile = p;
   save();
- 
+
   if (!p.age || !p.heightFt || !p.weightLbs || !p.targetLbs) {
     toast('Fill in all profile fields first'); return;
   }
   if (p.targetLbs >= p.weightLbs) {
     toast('Target weight must be less than current weight'); return;
   }
- 
+
   const rec = calcRecommendations(p);
- 
+
   // ── Show TDEE summary ──
   document.getElementById('tdee-summary').innerHTML =
     `<strong>BMR:</strong> ${rec.bmr} kcal &nbsp;·&nbsp; ` +
     `<strong>TDEE:</strong> ${rec.tdee} kcal &nbsp;·&nbsp; ` +
     `<strong>Deficit:</strong> ${rec.deficit} kcal/day &nbsp;·&nbsp; ` +
     `<strong>Rate:</strong> ${p.lossRate} lbs/week`;
- 
+
   // ── Show editable recommendation grid ──
   const recKeys = [
     { key:'calories', label:'Calories (kcal)', full:true },
@@ -1338,17 +1357,17 @@ function calculateGoals() {
       <div class="rec-lbl">${label}</div>
       <input class="rec-input" type="number" id="rec-${key}" value="${rec[key]}" inputmode="decimal"/>
     </div>`).join('');
- 
+
   document.getElementById('rec-card').style.display = 'block';
- 
+
   // ── Progress to goal ──
   renderProgressChart(p, rec);
   document.getElementById('progress-card').style.display = 'block';
- 
+
   // Scroll so user sees recommendations
   document.getElementById('page-goals').scrollTo({ top: 260, behavior: 'smooth' });
 }
- 
+
 function applyRecommendations() {
   const keys = ['calories','protein','carbs','fat','fiber','sugar'];
   keys.forEach(k => {
@@ -1363,7 +1382,7 @@ function applyRecommendations() {
   });
   toast('Targets updated!');
 }
- 
+
 function renderProgressChart(p, rec) {
   const weeks = rec.weeksToGoal;
   const labels = [], data = [];
@@ -1371,17 +1390,17 @@ function renderProgressChart(p, rec) {
     labels.push(w === 0 ? 'Now' : `Wk ${w}`);
     data.push(+(p.weightLbs - p.lossRate * w).toFixed(1));
   }
- 
+
   // Goal date
   const goalDate = new Date();
   goalDate.setDate(goalDate.getDate() + weeks * 7);
   const dateStr = goalDate.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
- 
+
   document.getElementById('goal-summary').innerHTML =
     `Losing <strong>${p.lossRate} lbs/week</strong>, you'll go from ` +
     `<strong>${p.weightLbs} lbs</strong> to <strong>${p.targetLbs} lbs</strong> ` +
     `in <strong>${weeks} weeks</strong> — around <strong>${dateStr}</strong>.`;
- 
+
   if (goalChart) goalChart.destroy();
   goalChart = new Chart(document.getElementById('goal-chart'), {
     type: 'line',
@@ -1434,7 +1453,7 @@ function renderProgressChart(p, rec) {
     }
   });
 }
- 
+
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function exportData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
@@ -1466,7 +1485,7 @@ function importData(event) {
   reader.readAsText(file);
   event.target.value = '';
 }
- 
+
 // ── INSTALL BANNER ────────────────────────────────────────────────────────────
 function dismissInstall() {
   const b = document.getElementById('install-banner');
@@ -1476,12 +1495,12 @@ window.addEventListener('beforeinstallprompt', e => {
   const b = document.getElementById('install-banner');
   if (b) { b.style.display = 'block'; b.onclick = () => { e.prompt(); b.style.display='none'; }; }
 });
- 
+
 // ── SERVICE WORKER ────────────────────────────────────────────────────────────
 if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('./sw.js');
 }
- 
+
 // ── INIT ──────────────────────────────────────────────────────────────────────
 // On every load: read from IDB first, fall back to localStorage.
 // savedFoods are always preserved — if an import somehow lacks them we restore
