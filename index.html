@@ -942,24 +942,36 @@ async function openScanner() {
 }
 
 // Native BarcodeDetector (Chrome desktop/Android, Safari 17+)
-// No format list — detect whatever the browser supports, maximises compatibility
+// Restrict to retail barcode formats only — avoids picking up QR codes (which
+// are also on food packaging and return URLs instead of product numbers).
 function startNativeScanner(video) {
-  const detector = new BarcodeDetector();
+  let detector;
+  try {
+    detector = new BarcodeDetector({
+      formats: ['ean_13', 'ean_8', 'upc_a', 'upc_e', 'code_128']
+    });
+  } catch(e) {
+    // Some browsers don't accept a format list — fall back to unrestricted
+    detector = new BarcodeDetector();
+  }
+
   async function tick() {
     if (!_scannerActive) return;
-    // Only attempt detection when the video has a current frame
     if (video.readyState >= 2 && !video.paused) {
       try {
         const results = await detector.detect(video);
-        if (results.length > 0) {
-          const code = results[0].rawValue;
-          closeScanner();
-          lookupBarcode(code);
-          return;
+        for (const r of results) {
+          const code = r.rawValue.replace(/[^0-9]/g, ''); // strip non-digits
+          // Product barcodes are 6–14 digits — skip QR codes, URLs, text codes
+          if (code.length >= 6 && code.length <= 14) {
+            closeScanner();
+            lookupBarcode(code);
+            return;
+          }
         }
       } catch(e) {}
     }
-    setTimeout(() => requestAnimationFrame(tick), 150); // ~6 fps is plenty
+    setTimeout(() => requestAnimationFrame(tick), 150);
   }
   requestAnimationFrame(tick);
 }
@@ -1011,6 +1023,14 @@ function closeScanner() {
 
 // ── OPEN FOOD FACTS LOOKUP ────────────────────────────────────────────────────
 async function lookupBarcode(code) {
+  // Final guard — never send a non-numeric or suspiciously long string to the API
+  const clean = code.replace(/[^0-9]/g, '');
+  if (clean.length < 6 || clean.length > 14) {
+    toast('Could not read barcode — try again');
+    return;
+  }
+  code = clean;
+
   const resultsEl = document.getElementById('fdc-results');
   document.getElementById('fdc-search').value = '';
   resultsEl.innerHTML = `<div class="search-status"><span class="search-spinner"></span>Looking up barcode ${code}…</div>`;
