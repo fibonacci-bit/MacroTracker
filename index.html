@@ -363,18 +363,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     <!-- RECIPES PAGE -->
     <div class="page" id="page-recipes">
 
-      <!-- LIST VIEW -->
-      <div id="recipe-list-view">
-        <div class="card">
-          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
-            <span>My recipes</span>
-            <button class="use-btn" onclick="showRecipeBuilder(null)">+ New recipe</button>
-          </div>
-          <div id="recipe-list"></div>
-        </div>
-      </div>
-
-      <!-- BUILDER VIEW (hidden until New / Edit) -->
+      <!-- BUILDER (hidden until New / Edit tapped) -->
       <div id="recipe-builder-view" style="display:none">
 
         <!-- Name -->
@@ -435,6 +424,15 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <button class="btn btn-primary" style="flex:1" onclick="saveRecipe()">Save recipe</button>
           <button class="btn" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="cancelRecipeBuilder()">Cancel</button>
         </div>
+      </div>
+
+      <!-- SAVED RECIPES — always visible -->
+      <div class="card">
+        <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+          <span>Saved recipes</span>
+          <button class="use-btn" id="new-recipe-btn" onclick="showRecipeBuilder(null)">+ New recipe</button>
+        </div>
+        <div id="recipe-list"></div>
       </div>
     </div>
 
@@ -1052,10 +1050,11 @@ function calcRecipeTotals(ingredients) {
 
 function showRecipeBuilder(id) {
   _editingRecipeId = id || null;
-  document.getElementById('recipe-list-view').style.display = 'none';
   document.getElementById('recipe-builder-view').style.display = 'block';
+  document.getElementById('new-recipe-btn').style.display = 'none';
   document.getElementById('rec-ing-results').innerHTML = '';
   document.getElementById('rec-ing-search').value = '';
+  document.getElementById('page-recipes').scrollTo({ top: 0, behavior: 'smooth' });
 
   if (id) {
     const r = state.recipes.find(r => r.id === id);
@@ -1081,8 +1080,8 @@ function cancelRecipeBuilder() {
   _editingRecipeId   = null;
   document.getElementById('rec-ing-results').innerHTML = '';
   document.getElementById('rec-ing-search').value      = '';
-  document.getElementById('recipe-list-view').style.display    = 'block';
   document.getElementById('recipe-builder-view').style.display = 'none';
+  document.getElementById('new-recipe-btn').style.display = '';
   renderRecipes();
 }
 
@@ -1515,19 +1514,40 @@ function parseOFFProduct(p) {
 // ── SAVED FOODS ───────────────────────────────────────────────────────────────
 function renderSavedFoods() {
   const list = document.getElementById('saved-foods-list');
-  if (!state.savedFoods.length) {
-    list.innerHTML = '<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No saved foods yet — star a food to save it</div>';
-    return;
+  let html = '';
+
+  // ── Individual saved foods ──
+  if (state.savedFoods.length) {
+    html += state.savedFoods.map((food, i) => `
+      <div class="saved-food-item">
+        <div class="saved-food-info">
+          <div class="saved-food-name">${food.name}</div>
+          <div class="saved-food-macros">${food.calories} kcal · P:${food.protein}g · C:${food.carbs}g · F:${food.fat}g · Fiber:${food.fiber}g</div>
+        </div>
+        <button class="use-btn" onclick="loadSavedFood(${i})">Use</button>
+        <button class="del-btn" onclick="deleteSavedFood(${i})" title="Remove">✕</button>
+      </div>`).join('');
+  } else {
+    html += '<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No saved foods yet — star a food to save it</div>';
   }
-  list.innerHTML = state.savedFoods.map((food, i) => `
-    <div class="saved-food-item">
-      <div class="saved-food-info">
-        <div class="saved-food-name">${food.name}</div>
-        <div class="saved-food-macros">${food.calories} kcal · P:${food.protein}g · C:${food.carbs}g · F:${food.fat}g · Fiber:${food.fiber}g</div>
-      </div>
-      <button class="use-btn" onclick="loadSavedFood(${i})">Use</button>
-      <button class="del-btn" onclick="deleteSavedFood(${i})" title="Remove">✕</button>
-    </div>`).join('');
+
+  // ── Recipes section ──
+  if (state.recipes && state.recipes.length) {
+    html += `<div style="font-size:11px;font-weight:500;color:var(--text3);letter-spacing:0.1em;text-transform:uppercase;font-family:var(--mono);margin:14px 0 8px;padding-top:10px;border-top:1px solid var(--border)">Recipes</div>`;
+    html += state.recipes.map(r => {
+      const per = recipeNutrientsPer(r, r.servingSize);
+      return `
+        <div class="saved-food-item">
+          <div class="saved-food-info">
+            <div class="saved-food-name">🥘 ${r.name}</div>
+            <div class="saved-food-macros">per ${r.servingSize}${r.yieldUnit} · ${per.calories} kcal · P:${per.protein}g · C:${per.carbs}g · F:${per.fat}g</div>
+          </div>
+          <button class="use-btn" onclick="useRecipe('${r.id}')">Use</button>
+        </div>`;
+    }).join('');
+  }
+
+  list.innerHTML = html;
 }
 function getCurrentFormFood() {
   const name = document.getElementById('f-name').value.trim();
