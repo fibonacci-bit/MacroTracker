@@ -295,6 +295,9 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     <!-- LOG PAGE -->
     <div class="page" id="page-log">
 
+      <!-- DAILY CHECK-IN SHORTCUT -->
+      <div id="log-checkin-bar"></div>
+
       <!-- FDC FOOD SEARCH -->
       <div class="card">
         <div class="card-title">Search food database</div>
@@ -395,14 +398,20 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         </div>
         <div class="chart-wrap"><canvas id="macro-chart"></canvas></div>
       </div>
-      <div class="card" id="weight-trend-card" style="display:none">
+      <div class="card" id="weight-trend-card">
         <div class="card-title">Weight trend — 7-day rolling average</div>
-        <div class="legend">
+        <div id="weight-trend-legend" class="legend" style="display:none">
           <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>7-day avg</div>
           <div class="legend-item"><div class="legend-dot" style="background:rgba(167,139,250,0.3)"></div>Daily</div>
         </div>
-        <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
-        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6">Log your weight each morning from the Today page. The trend line smooths out day-to-day fluctuations from water, digestion, and sodium.</div>
+        <div id="weight-trend-placeholder" style="display:flex;flex-direction:column;align-items:center;justify-content:center;padding:28px 16px;gap:10px">
+          <div style="font-size:28px">⚖️</div>
+          <div style="font-size:14px;color:var(--text2);font-weight:600;text-align:center">Your trend chart will appear here</div>
+          <div style="font-size:12px;color:var(--text3);text-align:center;line-height:1.65;max-width:260px">Log your weight on <strong style="color:var(--text2)">3 separate days</strong> using the Daily check-in on the Today page to see your trend.</div>
+          <button class="checkin-btn" style="margin-top:4px" onclick="showPage('today', document.getElementById('nav-today')); setTimeout(()=>document.getElementById('checkin-widget')?.scrollIntoView({behavior:'smooth'}),100)">Go to Daily check-in →</button>
+        </div>
+        <div class="chart-wrap" id="weight-chart-wrap" style="display:none"><canvas id="weight-chart"></canvas></div>
+        <div id="weight-trend-note" style="display:none;font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6">The trend line smooths out day-to-day fluctuations from water, digestion, and sodium.</div>
       </div>
       <div class="card">
         <div class="card-title">Daily summary</div>
@@ -1085,6 +1094,22 @@ function renderToday() {
 function renderLogPage() {
   renderDateLabel();
   renderSavedFoods();
+  // Daily check-in shortcut bar
+  const bar = document.getElementById('log-checkin-bar');
+  if (bar) {
+    const ci = (state.checkIns || {})[viewDate];
+    bar.innerHTML = ci != null
+      ? `<div class="checkin-card" style="margin:12px 16px 0;cursor:pointer" onclick="showPage('today',document.getElementById('nav-today'));setTimeout(()=>document.getElementById('checkin-widget')?.scrollIntoView({behavior:'smooth'}),100)">
+           <span style="font-size:16px">⚖️</span>
+           <span class="checkin-label">Daily check-in</span>
+           <span class="checkin-val">${ci} lbs ✓</span>
+         </div>`
+      : `<div class="checkin-card" style="margin:12px 16px 0;cursor:pointer;border-color:var(--purple);opacity:0.85" onclick="showPage('today',document.getElementById('nav-today'));setTimeout(()=>document.getElementById('checkin-widget')?.scrollIntoView({behavior:'smooth'}),100)">
+           <span style="font-size:16px">⚖️</span>
+           <span class="checkin-label">Daily check-in — tap to log today's weight</span>
+           <span style="font-size:18px;color:var(--text3)">›</span>
+         </div>`;
+  }
   const ll = document.getElementById('log-list');
   const items = getDayLog(viewDate);
   if (!items.length) {
@@ -2240,14 +2265,14 @@ function renderCheckIn() {
   if (val != null) {
     el.innerHTML = `
       <div class="checkin-card">
-        <span class="checkin-label">Morning check-in</span>
+        <span class="checkin-label">Daily check-in</span>
         <span class="checkin-val">${val} lbs</span>
         <button class="checkin-btn" onclick="editCheckIn()">Edit</button>
       </div>`;
   } else {
     el.innerHTML = `
       <div class="checkin-card">
-        <span class="checkin-label">Morning check-in (optional)</span>
+        <span class="checkin-label">Daily check-in (optional)</span>
         <input class="checkin-input" type="number" id="checkin-input" inputmode="decimal" placeholder="lbs"/>
         <button class="checkin-btn" onclick="logCheckIn()">Log</button>
       </div>`;
@@ -2266,10 +2291,18 @@ function getLast30() {
 function renderWeightTrend() {
   const checkIns = state.checkIns || {};
   const allDates = getLast30();
-  // Only render if we have at least 3 check-ins
-  const hasData = allDates.filter(d => checkIns[d] != null).length >= 3;
-  const card = document.getElementById('weight-trend-card');
-  if (card) card.style.display = hasData ? 'block' : 'none';
+  const count = allDates.filter(d => checkIns[d] != null).length;
+  const hasData = count >= 3;
+
+  // Toggle placeholder vs chart
+  const placeholder = document.getElementById('weight-trend-placeholder');
+  const chartWrap   = document.getElementById('weight-chart-wrap');
+  const legend      = document.getElementById('weight-trend-legend');
+  const note        = document.getElementById('weight-trend-note');
+  if (placeholder) placeholder.style.display = hasData ? 'none' : 'flex';
+  if (chartWrap)   chartWrap.style.display   = hasData ? 'block' : 'none';
+  if (legend)      legend.style.display      = hasData ? 'flex' : 'none';
+  if (note)        note.style.display        = hasData ? 'block' : 'none';
   if (!hasData) return;
 
   // Build raw daily series (null for days with no entry)
