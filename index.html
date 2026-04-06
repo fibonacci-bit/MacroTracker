@@ -199,6 +199,14 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .rec-item.full { grid-column: 1 / -1; }
 .tdee-box { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; color: var(--text3); font-family: var(--mono); line-height: 1.9; margin-bottom: 12px; }
 .tdee-box strong { color: var(--text2); }
+/* CHECK-IN WIDGET */
+.checkin-card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); margin: 0 16px 16px; padding: 12px 14px; display: flex; align-items: center; gap: 10px; }
+.checkin-label { font-size: 12px; color: var(--text3); flex: 1; }
+.checkin-val { font-size: 15px; font-weight: 600; font-family: var(--mono); color: var(--purple); }
+.checkin-input { width: 90px; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 10px; color: var(--text); font-size: 15px; font-weight: 600; font-family: var(--mono); outline: none; text-align: center; }
+.checkin-input:focus { border-color: var(--purple); }
+.checkin-btn { background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 6px 12px; color: var(--text2); font-size: 12px; font-family: var(--font); cursor: pointer; white-space: nowrap; }
+.checkin-btn:active { background: var(--bg4); }
 /* CALIBRATION */
 .calib-progress-bar { background: var(--bg4); border-radius: 999px; height: 8px; margin: 10px 0 14px; overflow: hidden; }
 .calib-progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
@@ -282,6 +290,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div class="card-title">Meals</div>
         <div id="meal-list"></div>
       </div>
+      <div id="checkin-widget"></div>
     </div>
     <!-- LOG PAGE -->
     <div class="page" id="page-log">
@@ -385,6 +394,15 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           <div class="legend-item"><div class="legend-dot" style="background:#f87171"></div>Fat</div>
         </div>
         <div class="chart-wrap"><canvas id="macro-chart"></canvas></div>
+      </div>
+      <div class="card" id="weight-trend-card" style="display:none">
+        <div class="card-title">Weight trend — 7-day rolling average</div>
+        <div class="legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#a78bfa"></div>7-day avg</div>
+          <div class="legend-item"><div class="legend-dot" style="background:rgba(167,139,250,0.3)"></div>Daily</div>
+        </div>
+        <div class="chart-wrap"><canvas id="weight-chart"></canvas></div>
+        <div style="font-size:11px;color:var(--text3);margin-top:8px;line-height:1.6">Log your weight each morning from the Today page. The trend line smooths out day-to-day fluctuations from water, digestion, and sodium.</div>
       </div>
       <div class="card">
         <div class="card-title">Daily summary</div>
@@ -876,7 +894,7 @@ const WORKER_BASE = 'https://fdc-proxy.mrcoury.workers.dev'; // base for /off/ r
 // ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
 let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [], profile: {...DEFAULT_PROFILE}, recipes: [] };
 let viewDate = todayKey();
-let calChart = null, macChart = null, goalChart = null;
+let calChart = null, macChart = null, goalChart = null, weightChart = null;
 let activePage = 'today';
 
 // In-memory store of the last FDC search results for selection
@@ -1049,6 +1067,8 @@ function renderToday() {
         <span class="meal-cal">${item.calories}</span>
       </div>`).join('');
   }
+
+  renderCheckIn();
 
   // Streak counter
   let streak = 0;
@@ -1950,6 +1970,8 @@ function renderHistory() {
       scales: { x:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'}}, y:{stacked:true,ticks:{color:'#555b75',font:{size:11}},grid:{color:'rgba(255,255,255,0.04)'},beginAtZero:true} } }
   });
 
+  renderWeightTrend();
+
   const hl = document.getElementById('history-list');
   hl.innerHTML = days.slice().reverse().map(k => {
     const t   = getDayTotals(k);
@@ -2186,6 +2208,129 @@ function renderProgressChart(p, rec) {
   });
 }
 
+// ── WEIGHT CHECK-IN ───────────────────────────────────────────────────────────
+function logCheckIn() {
+  const input = document.getElementById('checkin-input');
+  const val = parseFloat(input?.value);
+  if (!val || val < 50 || val > 700) { toast('Enter a valid weight in lbs'); return; }
+  if (!state.checkIns) state.checkIns = {};
+  state.checkIns[viewDate] = val;
+  // Also feed into calibration if active
+  if (state.calibration?.phase === 'active') {
+    state.calibration.weighIns[viewDate] = val;
+  }
+  save();
+  renderCheckIn();
+  renderCalibration();
+  toast('Check-in logged ✓');
+}
+
+function editCheckIn() {
+  // Clear today's entry so the input shows again
+  if (state.checkIns) delete state.checkIns[viewDate];
+  save();
+  renderCheckIn();
+}
+
+function renderCheckIn() {
+  const el = document.getElementById('checkin-widget');
+  if (!el) return;
+  if (!state.checkIns) state.checkIns = {};
+  const val = state.checkIns[viewDate];
+  if (val != null) {
+    el.innerHTML = `
+      <div class="checkin-card">
+        <span class="checkin-label">Morning check-in</span>
+        <span class="checkin-val">${val} lbs</span>
+        <button class="checkin-btn" onclick="editCheckIn()">Edit</button>
+      </div>`;
+  } else {
+    el.innerHTML = `
+      <div class="checkin-card">
+        <span class="checkin-label">Morning check-in (optional)</span>
+        <input class="checkin-input" type="number" id="checkin-input" inputmode="decimal" placeholder="lbs"/>
+        <button class="checkin-btn" onclick="logCheckIn()">Log</button>
+      </div>`;
+  }
+}
+
+function getLast30() {
+  const days = [];
+  for (let i = 29; i >= 0; i--) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    days.push(d.toISOString().split('T')[0]);
+  }
+  return days;
+}
+
+function renderWeightTrend() {
+  const checkIns = state.checkIns || {};
+  const allDates = getLast30();
+  // Only render if we have at least 3 check-ins
+  const hasData = allDates.filter(d => checkIns[d] != null).length >= 3;
+  const card = document.getElementById('weight-trend-card');
+  if (card) card.style.display = hasData ? 'block' : 'none';
+  if (!hasData) return;
+
+  // Build raw daily series (null for days with no entry)
+  const rawData = allDates.map(d => checkIns[d] != null ? checkIns[d] : null);
+
+  // 7-day rolling average (require at least 2 values in window)
+  const avgData = allDates.map((d, i) => {
+    const window = rawData.slice(Math.max(0, i - 6), i + 1).filter(v => v != null);
+    return window.length >= 2 ? +(window.reduce((a, b) => a + b, 0) / window.length).toFixed(1) : null;
+  });
+
+  // Trim labels to only show dates that have either raw or avg data
+  const labels = allDates.map(fmtKeyShort);
+
+  // Weight range for y-axis
+  const allVals = [...rawData, ...avgData].filter(v => v != null);
+  const minW = Math.floor(Math.min(...allVals)) - 3;
+  const maxW = Math.ceil(Math.max(...allVals)) + 3;
+
+  if (weightChart) weightChart.destroy();
+  weightChart = new Chart(document.getElementById('weight-chart'), {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [
+        {
+          label: 'Daily',
+          data: rawData,
+          borderColor: 'rgba(167,139,250,0.35)',
+          backgroundColor: 'transparent',
+          borderWidth: 1,
+          pointRadius: 3,
+          pointBackgroundColor: 'rgba(167,139,250,0.5)',
+          spanGaps: false,
+          tension: 0,
+        },
+        {
+          label: '7-day avg',
+          data: avgData,
+          borderColor: '#a78bfa',
+          backgroundColor: 'rgba(167,139,250,0.08)',
+          borderWidth: 2.5,
+          pointRadius: 0,
+          spanGaps: true,
+          tension: 0.4,
+          fill: true,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false } },
+      scales: {
+        x: { ticks: { color: '#555b75', font: { size: 10 }, maxTicksLimit: 8, maxRotation: 0 }, grid: { color: 'rgba(255,255,255,0.04)' } },
+        y: { ticks: { color: '#555b75', font: { size: 11 } }, grid: { color: 'rgba(255,255,255,0.04)' }, min: minW, max: maxW }
+      }
+    }
+  });
+}
+
 // ── CALIBRATION ───────────────────────────────────────────────────────────────
 // Measures true TDEE (Total Daily Energy Expenditure) empirically over 21 days by
 // comparing average logged calories against actual weight trend (lbs lost or gained).
@@ -2415,6 +2560,7 @@ async function init() {
       if (!state.profile)      state.profile      = {...DEFAULT_PROFILE};
       if (!state.recipes)      state.recipes      = [];
       if (!state.calibration)  state.calibration  = { phase: 'idle', startDate: null, weighIns: {} };
+      if (!state.checkIns)     state.checkIns     = {};
     } else {
       // Fall back to localStorage if IDB is empty (first install or cleared)
       const ls = localStorage.getItem('mt_v2');
@@ -2426,6 +2572,7 @@ async function init() {
           if (!state.profile)      state.profile      = {...DEFAULT_PROFILE};
           if (!state.recipes)      state.recipes      = [];
           if (!state.calibration)  state.calibration  = { phase: 'idle', startDate: null, weighIns: {} };
+          if (!state.checkIns)     state.checkIns     = {};
           await idbSet('mt_state', state); // promote to IDB
         }
       }
@@ -2434,12 +2581,13 @@ async function init() {
     // IDB unavailable — use localStorage only
     try {
       const ls = localStorage.getItem('mt_v2');
-      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; if (!state.recipes) state.recipes = []; if (!state.calibration) state.calibration = { phase: 'idle', startDate: null, weighIns: {} }; }
+      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; if (!state.recipes) state.recipes = []; if (!state.calibration) state.calibration = { phase: 'idle', startDate: null, weighIns: {} }; if (!state.checkIns) state.checkIns = {}; }
     } catch(e2) {}
   }
   viewDate = todayKey();
   renderDateLabel();
   renderToday();
+  renderCheckIn();
   renderCalibration();
   dismissInstall();
 }
