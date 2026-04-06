@@ -2271,7 +2271,7 @@ function renderCheckIn() {
       </div>`;
   } else {
     el.innerHTML = `
-      <div class="checkin-card">
+      <div class="checkin-card" style="border-color:var(--purple)">
         <span class="checkin-label">Daily check-in (optional)</span>
         <input class="checkin-input" type="number" id="checkin-input" inputmode="decimal" placeholder="lbs"/>
         <button class="checkin-btn" onclick="logCheckIn()">Log</button>
