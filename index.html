@@ -183,6 +183,22 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .goal-summary { font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 14px; }
 .goal-summary strong { color: var(--text); }
 .goal-chart-wrap { position: relative; width: 100%; height: 200px; }
+/* RECIPES */
+.recipe-item { display:flex; align-items:flex-start; gap:12px; padding:14px 0; border-bottom:1px solid var(--border); }
+.recipe-item:last-child { border-bottom:none; }
+.recipe-item-info { flex:1; min-width:0; }
+.recipe-item-name { font-size:15px; font-weight:600; color:var(--text); margin-bottom:3px; }
+.recipe-item-meta { font-size:11px; color:var(--text3); font-family:var(--mono); margin-bottom:2px; }
+.recipe-item-macros { font-size:11px; color:var(--text2); font-family:var(--mono); }
+.recipe-item-actions { display:flex; gap:6px; align-items:center; flex-shrink:0; padding-top:2px; }
+.btn-icon { background:var(--bg3); border:1px solid var(--border); border-radius:6px; width:30px; height:30px; cursor:pointer; font-size:13px; display:flex; align-items:center; justify-content:center; flex-shrink:0; }
+/* RECIPE BUILDER */
+.rec-ing-item { display:flex; align-items:center; gap:10px; padding:10px 0; border-bottom:1px solid var(--border); }
+.rec-ing-item:last-child { border-bottom:none; }
+.rec-ing-info { flex:1; min-width:0; }
+.rec-ing-name { font-size:14px; font-weight:500; color:var(--text); white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.rec-ing-amount { font-size:11px; color:var(--text3); font-family:var(--mono); margin-top:2px; }
+.rb-totals-box { background:rgba(74,222,128,0.06); border:1px solid rgba(74,222,128,0.2); border-radius:var(--radius-sm); padding:10px 14px; font-size:12px; color:var(--text2); line-height:1.8; margin-bottom:12px; }
 /* BARCODE SCANNER OVERLAY */
 .scanner-overlay { position: fixed; inset: 0; background: #000; z-index: 1000; display: flex; flex-direction: column; }
 .scanner-header { padding: calc(var(--safe-top) + 16px) 16px 12px; display: flex; align-items: center; justify-content: space-between; flex-shrink: 0; }
@@ -344,6 +360,84 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       </div>
     </div>
 
+    <!-- RECIPES PAGE -->
+    <div class="page" id="page-recipes">
+
+      <!-- LIST VIEW -->
+      <div id="recipe-list-view">
+        <div class="card">
+          <div class="card-title" style="display:flex;align-items:center;justify-content:space-between;">
+            <span>My recipes</span>
+            <button class="use-btn" onclick="showRecipeBuilder(null)">+ New recipe</button>
+          </div>
+          <div id="recipe-list"></div>
+        </div>
+      </div>
+
+      <!-- BUILDER VIEW (hidden until New / Edit) -->
+      <div id="recipe-builder-view" style="display:none">
+
+        <!-- Name -->
+        <div class="card">
+          <div class="card-title">Recipe details</div>
+          <div class="form-group">
+            <label class="form-label">Recipe name</label>
+            <input class="form-input" type="text" id="rb-name" placeholder="e.g. Turkey Chili" autocomplete="off"/>
+          </div>
+          <div class="form-grid form-group">
+            <div>
+              <label class="form-label">Total yield</label>
+              <input class="form-input" type="number" id="rb-yield" inputmode="decimal" placeholder="e.g. 2400"/>
+            </div>
+            <div>
+              <label class="form-label">Unit</label>
+              <select class="form-input" id="rb-yield-unit">
+                <option value="g">g (grams)</option>
+                <option value="ml">ml</option>
+                <option value="oz">oz</option>
+                <option value="cups">cups</option>
+                <option value="servings">servings</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Default serving size (same unit)</label>
+            <input class="form-input" type="number" id="rb-serving" inputmode="decimal" placeholder="e.g. 300" style="width:50%"/>
+          </div>
+        </div>
+
+        <!-- Ingredient list -->
+        <div class="card">
+          <div class="card-title">Ingredients</div>
+          <div id="rb-ingredients"></div>
+          <div class="rb-totals-box" id="rb-totals" style="display:none">
+            <div id="rb-total-text"></div>
+          </div>
+        </div>
+
+        <!-- Ingredient search -->
+        <div class="card">
+          <div class="card-title">Add ingredient</div>
+          <div class="search-row">
+            <input class="form-input" type="text" id="rec-ing-search"
+              placeholder="Search ingredient…"
+              autocomplete="off"
+              onkeydown="if(event.key==='Enter')searchRecipeIngredient()"
+              style="flex:1"/>
+            <button class="search-btn" id="rec-ing-search-btn" onclick="searchRecipeIngredient()">Search</button>
+            <button class="scan-btn" onclick="scanForRecipe()" title="Scan barcode">&#x1F4F7; Scan</button>
+          </div>
+          <div class="search-results" id="rec-ing-results"></div>
+        </div>
+
+        <!-- Save / cancel -->
+        <div style="display:flex;gap:8px;margin-bottom:24px">
+          <button class="btn btn-primary" style="flex:1" onclick="saveRecipe()">Save recipe</button>
+          <button class="btn" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="cancelRecipeBuilder()">Cancel</button>
+        </div>
+      </div>
+    </div>
+
     <!-- GOALS PAGE -->
     <div class="page" id="page-goals">
 
@@ -462,6 +556,10 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>
       <span class="nav-label">Goals</span>
     </button>
+    <button class="nav-btn" onclick="showPage('recipes',this)" id="nav-recipes">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
+      <span class="nav-label">Recipes</span>
+    </button>
   </nav>
 </div>
 
@@ -508,7 +606,7 @@ const WORKER_URL  = 'https://fdc-proxy.mrcoury.workers.dev/fdc';
 const WORKER_BASE = 'https://fdc-proxy.mrcoury.workers.dev'; // base for /off/ route
 
 // ── STATE (in-memory, persisted to IndexedDB) ────────────────────────────────
-let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [], profile: {...DEFAULT_PROFILE} };
+let state = { goals: {...DEFAULT_GOALS}, logs: {}, savedFoods: [], profile: {...DEFAULT_PROFILE}, recipes: [] };
 let viewDate = todayKey();
 let calChart = null, macChart = null, goalChart = null;
 let activePage = 'today';
@@ -516,6 +614,9 @@ let activePage = 'today';
 // In-memory store of the last FDC search results for selection
 let _fdcResults = [];
 let _selectedFoodIdx = null;
+let _recipeIngredients = [];  // working ingredient list while building a recipe
+let _editingRecipeId   = null;
+let _recipeBarcodeScan = false; // true when scanner was opened from the recipe builder
 
 // ── INDEXEDDB ─────────────────────────────────────────────────────────────────
 // DB_NAME and DB_VER must never change — changing them would orphan existing data.
@@ -586,6 +687,7 @@ function showPage(name, btn) {
   if (name === 'log')     renderLogPage();
   if (name === 'history') renderHistory();
   if (name === 'goals')   renderGoals();
+  if (name === 'recipes') renderRecipes();
 }
 function changeDay(d) {
   const cur = new Date(viewDate+'T00:00:00');
@@ -893,6 +995,310 @@ function backToResults() {
   }).join('');
 }
 
+// ── RECIPES ───────────────────────────────────────────────────────────────────
+function genId() {
+  return Date.now().toString(36) + Math.random().toString(36).slice(2);
+}
+
+function renderRecipes() {
+  const listEl = document.getElementById('recipe-list');
+  if (!state.recipes || !state.recipes.length) {
+    listEl.innerHTML = `<div class="empty"><div class="empty-icon">🥘</div>No recipes yet.<br>Tap "+ New recipe" to create one.</div>`;
+    return;
+  }
+  listEl.innerHTML = state.recipes.map(r => {
+    const per = recipeNutrientsPer(r, 100);
+    return `
+      <div class="recipe-item">
+        <div class="recipe-item-info">
+          <div class="recipe-item-name">${r.name}</div>
+          <div class="recipe-item-meta">${r.ingredients.length} ingredient${r.ingredients.length !== 1 ? 's' : ''} · ${r.yieldAmount}${r.yieldUnit} total</div>
+          <div class="recipe-item-macros">Per 100${r.yieldUnit}: ${per.calories} kcal · P:${per.protein}g · C:${per.carbs}g · F:${per.fat}g</div>
+        </div>
+        <div class="recipe-item-actions">
+          <button class="use-btn" onclick="useRecipe('${r.id}')">Use</button>
+          <button class="btn-icon" onclick="editRecipe('${r.id}')" title="Edit">✏️</button>
+          <button class="del-btn" onclick="deleteRecipe('${r.id}')" title="Delete">✕</button>
+        </div>
+      </div>`;
+  }).join('');
+}
+
+// Nutrients scaled to any amount relative to total yield
+function recipeNutrientsPer(recipe, amount) {
+  const ratio = amount / (recipe.yieldAmount || 1);
+  const t = recipe.totals;
+  return {
+    calories: Math.round(t.calories * ratio),
+    protein:  Math.round(t.protein  * ratio),
+    carbs:    Math.round(t.carbs    * ratio),
+    fat:      Math.round(t.fat      * ratio),
+    fiber:    Math.round(t.fiber    * ratio),
+    sugar:    Math.round(t.sugar    * ratio),
+  };
+}
+
+function calcRecipeTotals(ingredients) {
+  return ingredients.reduce((acc, ing) => {
+    acc.calories += ing.calories || 0;
+    acc.protein  += ing.protein  || 0;
+    acc.carbs    += ing.carbs    || 0;
+    acc.fat      += ing.fat      || 0;
+    acc.fiber    += ing.fiber    || 0;
+    acc.sugar    += ing.sugar    || 0;
+    return acc;
+  }, { calories:0, protein:0, carbs:0, fat:0, fiber:0, sugar:0 });
+}
+
+function showRecipeBuilder(id) {
+  _editingRecipeId = id || null;
+  document.getElementById('recipe-list-view').style.display = 'none';
+  document.getElementById('recipe-builder-view').style.display = 'block';
+  document.getElementById('rec-ing-results').innerHTML = '';
+  document.getElementById('rec-ing-search').value = '';
+
+  if (id) {
+    const r = state.recipes.find(r => r.id === id);
+    if (r) {
+      document.getElementById('rb-name').value         = r.name;
+      document.getElementById('rb-yield').value        = r.yieldAmount;
+      document.getElementById('rb-yield-unit').value   = r.yieldUnit;
+      document.getElementById('rb-serving').value      = r.servingSize;
+      _recipeIngredients = r.ingredients.map(i => ({...i}));
+    }
+  } else {
+    document.getElementById('rb-name').value       = '';
+    document.getElementById('rb-yield').value      = '';
+    document.getElementById('rb-yield-unit').value = 'g';
+    document.getElementById('rb-serving').value    = '';
+    _recipeIngredients = [];
+  }
+  renderRecipeIngredients();
+}
+
+function cancelRecipeBuilder() {
+  _recipeIngredients = [];
+  _editingRecipeId   = null;
+  document.getElementById('rec-ing-results').innerHTML = '';
+  document.getElementById('rec-ing-search').value      = '';
+  document.getElementById('recipe-list-view').style.display    = 'block';
+  document.getElementById('recipe-builder-view').style.display = 'none';
+  renderRecipes();
+}
+
+function renderRecipeIngredients() {
+  const el = document.getElementById('rb-ingredients');
+  const totalsEl = document.getElementById('rb-totals');
+  if (!_recipeIngredients.length) {
+    el.innerHTML = `<div style="color:var(--text3);font-size:13px;text-align:center;padding:12px 0">No ingredients yet — search or scan below</div>`;
+    totalsEl.style.display = 'none';
+    return;
+  }
+  el.innerHTML = _recipeIngredients.map((ing, i) => `
+    <div class="rec-ing-item">
+      <div class="rec-ing-info">
+        <div class="rec-ing-name">${ing.name}</div>
+        <div class="rec-ing-amount">${ing.amount}${ing.unit} · ${ing.calories} kcal · P:${ing.protein}g · C:${ing.carbs}g · F:${ing.fat}g</div>
+      </div>
+      <button class="del-btn" onclick="removeRecipeIngredient(${i})">✕</button>
+    </div>`).join('');
+
+  const t = calcRecipeTotals(_recipeIngredients);
+  totalsEl.style.display = 'block';
+  document.getElementById('rb-total-text').innerHTML =
+    `Recipe total: <strong>${t.calories}</strong> kcal · P:<strong>${t.protein}g</strong> · C:<strong>${t.carbs}g</strong> · F:<strong>${t.fat}g</strong> · Fiber:<strong>${t.fiber}g</strong>`;
+}
+
+function removeRecipeIngredient(idx) {
+  _recipeIngredients.splice(idx, 1);
+  renderRecipeIngredients();
+}
+
+// Ingredient search — same FDC logic but results go into recipe builder
+async function searchRecipeIngredient() {
+  const query = document.getElementById('rec-ing-search').value.trim();
+  if (!query) { toast('Enter an ingredient to search'); return; }
+  const resultsEl = document.getElementById('rec-ing-results');
+  const btn = document.getElementById('rec-ing-search-btn');
+  btn.disabled = true;
+  resultsEl.innerHTML = '<div class="search-status"><span class="search-spinner"></span>Searching…</div>';
+  _fdcResults = [];
+  try {
+    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
+    const res = await fetch(url);
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const data = await res.json();
+    if (!data.foods || !data.foods.length) {
+      resultsEl.innerHTML = '<div class="search-status">No results found</div>';
+      btn.disabled = false; return;
+    }
+    _fdcResults = data.foods.map(food => ({
+      name:        food.description,
+      brand:       food.brandName   || '',
+      dataType:    food.dataType    || '',
+      servingSize: food.servingSize || 100,
+      servingUnit: food.servingSizeUnit || 'g',
+      serving:     food.servingSize ? `${food.servingSize}${food.servingSizeUnit || 'g'}` : '100g',
+      calories: getNutrient(food.foodNutrients, 1008),
+      protein:  getNutrient(food.foodNutrients, 1003),
+      carbs:    getNutrient(food.foodNutrients, 1005),
+      fat:      getNutrient(food.foodNutrients, 1004),
+      fiber:    getNutrient(food.foodNutrients, 1079),
+      sugar:    getNutrient(food.foodNutrients, 2000) || getNutrient(food.foodNutrients, 1063),
+    }));
+    resultsEl.innerHTML = _fdcResults.map((f, i) => {
+      const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
+      return `<div class="search-result" onclick="selectRecipeIngredient(${i})">
+        <div class="search-result-info">
+          <div class="search-result-name">${f.name}</div>
+          ${sub ? `<div class="search-result-sub">${sub}</div>` : ''}
+          <div class="search-result-macros">P:${f.protein}g · C:${f.carbs}g · F:${f.fat}g · Fiber:${f.fiber}g</div>
+        </div>
+        <div class="search-result-cal">${f.calories}</div>
+      </div>`;
+    }).join('');
+  } catch(err) {
+    resultsEl.innerHTML = '<div class="search-status">Search failed — check your connection</div>';
+  }
+  btn.disabled = false;
+}
+
+// Quantity panel for recipe ingredients (mirrors selectFDCFood but targets recipe builder)
+function selectRecipeIngredient(i) {
+  _selectedFoodIdx = i;
+  const food = _fdcResults[i];
+  if (!food) return;
+  const resultsEl = document.getElementById('rec-ing-results');
+  resultsEl.innerHTML = `
+    <div style="padding-top:4px">
+      <div style="font-size:14px;font-weight:600;color:var(--text);margin-bottom:2px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis">${food.name}</div>
+      <div style="font-size:11px;color:var(--text3);font-family:var(--mono);margin-bottom:14px">
+        ${food.brand ? food.brand + ' · ' : ''}${food.dataType} · base: ${food.serving}
+      </div>
+      <div class="form-group">
+        <label class="form-label">Amount (${food.servingUnit})</label>
+        <input class="form-input" type="number" id="rec-qty-input" value="${food.servingSize}"
+          inputmode="decimal" oninput="updateRecipeQtyPreview()" style="width:50%"/>
+      </div>
+      <div id="rec-qty-preview"></div>
+      <div style="display:flex;gap:8px;margin-top:4px">
+        <button class="btn btn-primary" style="flex:1" onclick="confirmRecipeIngredient()">Add to recipe</button>
+        <button class="btn" style="flex:1;background:var(--bg3);border:1px solid var(--border2);color:var(--text2)" onclick="backToRecipeSearch()">← Back</button>
+      </div>
+    </div>`;
+  updateRecipeQtyPreview();
+}
+
+function updateRecipeQtyPreview() {
+  const food = _fdcResults[_selectedFoodIdx];
+  if (!food) return;
+  const qty = parseFloat(document.getElementById('rec-qty-input').value) || 0;
+  const m = _scaleNutrients(food, qty);
+  document.getElementById('rec-qty-preview').innerHTML = `
+    <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 16px;margin-bottom:12px">
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;text-align:center">
+        <div><div style="font-size:20px;font-weight:600;color:var(--accent);font-family:var(--mono)">${m.calories}</div><div style="font-size:10px;color:var(--text3);margin-top:2px">kcal</div></div>
+        <div><div style="font-size:20px;font-weight:600;color:#60a5fa;font-family:var(--mono)">${m.protein}g</div><div style="font-size:10px;color:var(--text3);margin-top:2px">protein</div></div>
+        <div><div style="font-size:20px;font-weight:600;color:#fbbf24;font-family:var(--mono)">${m.carbs}g</div><div style="font-size:10px;color:var(--text3);margin-top:2px">carbs</div></div>
+        <div><div style="font-size:20px;font-weight:600;color:#f87171;font-family:var(--mono)">${m.fat}g</div><div style="font-size:10px;color:var(--text3);margin-top:2px">fat</div></div>
+        <div><div style="font-size:20px;font-weight:600;color:#a78bfa;font-family:var(--mono)">${m.fiber}g</div><div style="font-size:10px;color:var(--text3);margin-top:2px">fiber</div></div>
+        <div><div style="font-size:20px;font-weight:600;color:#f472b6;font-family:var(--mono)">${m.sugar}g</div><div style="font-size:10px;color:var(--text3);margin-top:2px">sugar</div></div>
+      </div>
+    </div>`;
+}
+
+function confirmRecipeIngredient() {
+  const food = _fdcResults[_selectedFoodIdx];
+  if (!food) return;
+  const qty = parseFloat(document.getElementById('rec-qty-input').value) || food.servingSize;
+  const m = _scaleNutrients(food, qty);
+  _recipeIngredients.push({
+    name: food.name, amount: qty, unit: food.servingUnit,
+    calories: m.calories, protein: m.protein, carbs: m.carbs,
+    fat: m.fat, fiber: m.fiber, sugar: m.sugar,
+  });
+  _fdcResults = []; _selectedFoodIdx = null;
+  document.getElementById('rec-ing-results').innerHTML = '';
+  document.getElementById('rec-ing-search').value = '';
+  renderRecipeIngredients();
+  toast('Added: ' + food.name);
+}
+
+function backToRecipeSearch() {
+  _selectedFoodIdx = null;
+  document.getElementById('rec-ing-results').innerHTML = _fdcResults.map((f, i) => {
+    const sub = [f.brand, f.dataType, f.serving].filter(Boolean).join(' · ');
+    return `<div class="search-result" onclick="selectRecipeIngredient(${i})">
+      <div class="search-result-info">
+        <div class="search-result-name">${f.name}</div>
+        ${sub ? `<div class="search-result-sub">${sub}</div>` : ''}
+        <div class="search-result-macros">P:${f.protein}g · C:${f.carbs}g · F:${f.fat}g · Fiber:${f.fiber}g</div>
+      </div>
+      <div class="search-result-cal">${f.calories}</div>
+    </div>`;
+  }).join('');
+}
+
+function saveRecipe() {
+  const name = document.getElementById('rb-name').value.trim();
+  if (!name) { toast('Enter a recipe name'); return; }
+  if (!_recipeIngredients.length) { toast('Add at least one ingredient'); return; }
+  const yieldAmount = parseFloat(document.getElementById('rb-yield').value);
+  if (!yieldAmount) { toast('Enter the total yield amount'); return; }
+  const yieldUnit   = document.getElementById('rb-yield-unit').value;
+  const servingSize = parseFloat(document.getElementById('rb-serving').value) || yieldAmount;
+  const totals = calcRecipeTotals(_recipeIngredients);
+  const recipe = {
+    id: _editingRecipeId || genId(),
+    name, yieldAmount, yieldUnit, servingSize,
+    ingredients: [..._recipeIngredients],
+    totals,
+  };
+  if (_editingRecipeId) {
+    const idx = state.recipes.findIndex(r => r.id === _editingRecipeId);
+    if (idx >= 0) state.recipes[idx] = recipe; else state.recipes.push(recipe);
+  } else {
+    state.recipes.push(recipe);
+  }
+  save();
+  toast('Recipe saved!');
+  cancelRecipeBuilder();
+}
+
+function editRecipe(id)   { showRecipeBuilder(id); }
+
+function deleteRecipe(id) {
+  state.recipes = state.recipes.filter(r => r.id !== id);
+  save(); toast('Recipe deleted'); renderRecipes();
+}
+
+// Use a recipe: navigate to Log, open quantity panel pre-loaded with recipe macros
+function useRecipe(id) {
+  const recipe = state.recipes.find(r => r.id === id);
+  if (!recipe) return;
+  const perServing = recipeNutrientsPer(recipe, recipe.servingSize);
+  _fdcResults = [{
+    name:        recipe.name,
+    brand:       'Recipe',
+    dataType:    `${recipe.yieldAmount}${recipe.yieldUnit} total`,
+    servingSize: recipe.servingSize,
+    servingUnit: recipe.yieldUnit,
+    serving:     `${recipe.servingSize}${recipe.yieldUnit}`,
+    calories: perServing.calories, protein: perServing.protein,
+    carbs:    perServing.carbs,    fat:     perServing.fat,
+    fiber:    perServing.fiber,    sugar:   perServing.sugar,
+  }];
+  showPage('log', document.getElementById('nav-log'));
+  document.getElementById('fdc-search').value = '';
+  selectFDCFood(0); // reuse the existing quantity panel
+}
+
+// Open scanner from recipe builder — result goes to recipe ingredient flow
+function scanForRecipe() {
+  _recipeBarcodeScan = true;
+  openScanner();
+}
+
 // ── BARCODE SCANNER ───────────────────────────────────────────────────────────
 let _scannerStream  = null;
 let _scannerActive  = false;
@@ -1053,7 +1459,13 @@ async function lookupBarcode(code) {
 
     const food = parseOFFProduct(data.product);
     _fdcResults = [food];
-    selectFDCFood(0); // go straight to quantity panel
+    if (_recipeBarcodeScan) {
+      _recipeBarcodeScan = false;
+      showPage('recipes', document.getElementById('nav-recipes'));
+      selectRecipeIngredient(0); // quantity panel in recipe builder
+    } else {
+      selectFDCFood(0); // quantity panel in log
+    }
   } catch(err) {
     console.error('Barcode lookup error:', err);
     resultsEl.innerHTML = `<div class="search-status">Lookup failed — check your connection</div>`;
@@ -1532,6 +1944,7 @@ async function init() {
       state = saved;
       if (!state.savedFoods) state.savedFoods = [];
       if (!state.profile)    state.profile    = {...DEFAULT_PROFILE};
+      if (!state.recipes)    state.recipes    = [];
     } else {
       // Fall back to localStorage if IDB is empty (first install or cleared)
       const ls = localStorage.getItem('mt_v2');
@@ -1541,6 +1954,7 @@ async function init() {
           state = parsed;
           if (!state.savedFoods) state.savedFoods = [];
           if (!state.profile)    state.profile    = {...DEFAULT_PROFILE};
+          if (!state.recipes)    state.recipes    = [];
           await idbSet('mt_state', state); // promote to IDB
         }
       }
@@ -1549,7 +1963,7 @@ async function init() {
     // IDB unavailable — use localStorage only
     try {
       const ls = localStorage.getItem('mt_v2');
-      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; }
+      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; if (!state.recipes) state.recipes = []; }
     } catch(e2) {}
   }
   viewDate = todayKey();
