@@ -55,6 +55,26 @@ html, body { height: 100%; overflow: hidden; background: var(--bg); color: var(-
 .nav-btn.active { color: var(--accent); }
 .nav-btn svg { width: 22px; height: 22px; }
 .nav-label { font-size: 11px; font-weight: 500; }
+/* LEARN PAGE */
+.learn-hero { background: linear-gradient(135deg, var(--bg2) 0%, var(--bg3) 100%); border-radius: var(--radius); padding: 20px; margin-bottom: 16px; }
+.learn-hero-title { font-size: 18px; font-weight: 700; color: var(--text); margin-bottom: 6px; }
+.learn-hero-sub { font-size: 13px; color: var(--text2); line-height: 1.65; }
+.learn-section { background: var(--bg2); border-radius: var(--radius); border: 1px solid var(--border); margin-bottom: 10px; overflow: hidden; }
+.learn-section-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; cursor: pointer; user-select: none; gap: 12px; }
+.learn-section-header:active { background: var(--bg3); }
+.learn-section-icon { font-size: 20px; flex-shrink: 0; }
+.learn-section-title { font-size: 14px; font-weight: 600; color: var(--text); flex: 1; }
+.learn-section-chevron { color: var(--text3); font-size: 12px; transition: transform 0.2s; flex-shrink: 0; }
+.learn-section-chevron.open { transform: rotate(180deg); }
+.learn-section-body { display: none; padding: 0 16px 16px; border-top: 1px solid var(--border); }
+.learn-section-body.open { display: block; }
+.learn-body-text { font-size: 13px; color: var(--text2); line-height: 1.75; margin-top: 12px; }
+.learn-body-text strong { color: var(--text); }
+.learn-formula { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px 14px; margin: 12px 0; font-family: var(--mono); font-size: 12px; color: var(--accent); line-height: 1.9; }
+.learn-cite { display: block; margin-top: 12px; padding: 10px 12px; background: var(--bg3); border-left: 3px solid var(--accent); border-radius: 0 var(--radius-sm) var(--radius-sm) 0; font-size: 11px; color: var(--text3); line-height: 1.6; font-family: var(--mono); }
+.learn-cite a { color: var(--blue); text-decoration: none; }
+.learn-cite a:active { text-decoration: underline; }
+.learn-tag { display: inline-block; font-size: 10px; font-family: var(--mono); padding: 2px 8px; border-radius: 99px; background: var(--bg4); color: var(--text3); margin-right: 4px; margin-bottom: 6px; }
 /* PAGE */
 .page { display: none; padding: 16px 16px 24px; }
 .page.active { display: block; }
@@ -555,6 +575,234 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     </div>
   </div>
 
+    <!-- LEARN PAGE -->
+    <div class="page" id="page-learn">
+      <div class="learn-hero">
+        <div class="learn-hero-title">The Science Behind the App</div>
+        <div class="learn-hero-sub">Every recommendation this app makes is grounded in published research. Tap any topic to understand the reasoning — and read the original studies if you want to go deeper.</div>
+      </div>
+
+      <!-- 1. Mifflin-St Jeor -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('bmr')">
+          <span class="learn-section-icon">🔥</span>
+          <span class="learn-section-title">BMR — Basal Metabolic Rate Formula</span>
+          <span class="learn-section-chevron" id="chev-bmr">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-bmr">
+          <div class="learn-body-text">
+            Your <strong>BMR (Basal Metabolic Rate)</strong> is the number of calories your body burns at complete rest — just to keep your heart beating, lungs breathing, and organs functioning. It's the starting point for everything else.
+            <br><br>
+            This app uses the <strong>Mifflin-St Jeor equation</strong>, published in 1990 and validated across multiple large studies. It consistently outperforms the older Harris-Benedict equation (1919) and is recommended by the Academy of Nutrition and Dietetics as the most accurate formula for estimating RMR (Resting Metabolic Rate) in healthy adults.
+          </div>
+          <div class="learn-formula">
+            Men:&nbsp;&nbsp; BMR = (10 × kg) + (6.25 × cm) − (5 × age) + 5<br>
+            Women: BMR = (10 × kg) + (6.25 × cm) − (5 × age) − 161
+          </div>
+          <div class="learn-body-text">
+            Even the best formula carries a <strong>±10–15% margin of error</strong> for any individual, due to differences in muscle mass, hormones, gut microbiome, and genetics. That's why the Calibration feature exists — it replaces the formula with a measurement of your actual metabolism.
+          </div>
+          <span class="learn-cite">
+            Mifflin MD, St Jeor ST, Hill LA, Scott BJ, Daugherty SA, Koh YO.<br>
+            <em>A new predictive equation for resting energy expenditure in healthy individuals.</em><br>
+            Am J Clin Nutr. 1990 Feb;51(2):241–7.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/2305711/" target="_blank">PubMed: 2305711 ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 2. TDEE & Activity Multipliers -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('tdee')">
+          <span class="learn-section-icon">⚡</span>
+          <span class="learn-section-title">TDEE — Total Daily Energy Expenditure</span>
+          <span class="learn-section-chevron" id="chev-tdee">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-tdee">
+          <div class="learn-body-text">
+            <strong>TDEE (Total Daily Energy Expenditure)</strong> is your BMR multiplied by an activity factor to account for movement throughout the day. It represents the total calories you burn in 24 hours.
+            <br><br>
+            TDEE has four components researchers use to measure it precisely:
+            <br><br>
+            <strong>BMR</strong> — calories burned at rest (~60–70% of TDEE)<br>
+            <strong>TEF (Thermic Effect of Food)</strong> — energy used to digest food (~10%)<br>
+            <strong>EAT (Exercise Activity Thermogenesis)</strong> — planned workouts (~5–15%)<br>
+            <strong>NEAT (Non-Exercise Activity Thermogenesis)</strong> — all other movement: walking, fidgeting, standing (~15–30%)
+            <br><br>
+            NEAT is the wild card. Two people with identical BMRs can have TDEE values 500–1,000 kcal apart simply based on how much they move during daily life. This is a key reason why formula-based estimates vary so widely between individuals.
+          </div>
+          <span class="learn-cite">
+            Levine JA. <em>Non-exercise activity thermogenesis (NEAT).</em><br>
+            Best Pract Res Clin Endocrinol Metab. 2002 Dec;16(4):679–702.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/12468415/" target="_blank">PubMed: 12468415 ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 3. The 3500 kcal/lb rule -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('kcal')">
+          <span class="learn-section-icon">⚖️</span>
+          <span class="learn-section-title">The 3,500 kcal per Pound Rule</span>
+          <span class="learn-section-chevron" id="chev-kcal">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-kcal">
+          <div class="learn-body-text">
+            The commonly cited rule — "a 3,500 calorie deficit equals 1 lb of fat loss" — originates from research by Max Wishnofsky in 1958, based on the energy density of pure adipose tissue (~3,500 kcal/lb).
+            <br><br>
+            <strong>It's a useful approximation, but an oversimplification.</strong> More recent modeling by Kevin Hall and colleagues at the NIH showed that the real relationship is dynamic: as you lose weight, your metabolism adapts, meaning each additional pound lost requires a progressively larger deficit. Over the long term, the true figure is closer to <strong>3,000–3,700 kcal per lb</strong> depending on your starting weight, body composition, and how aggressively you're cutting.
+            <br><br>
+            For short-term planning (weeks, not months), 3,500 kcal/lb is a reliable working estimate. The Calibration feature accounts for metabolic adaptation by measuring your actual expenditure rather than assuming a fixed number.
+          </div>
+          <span class="learn-cite">
+            Hall KD, Sacks G, Chandramohan D, et al.<br>
+            <em>Quantification of the effect of energy imbalance on bodyweight.</em><br>
+            Lancet. 2011 Aug 27;378(9793):826–37.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/21872751/" target="_blank">PubMed: 21872751 ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 4. Empirical TDEE calibration -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('calib')">
+          <span class="learn-section-icon">📏</span>
+          <span class="learn-section-title">Empirical Calibration — Measuring Your Real TDEE</span>
+          <span class="learn-section-chevron" id="chev-calib">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-calib">
+          <div class="learn-body-text">
+            The most accurate way to measure TDEE outside a metabolic lab is the <strong>dietary recall + weight trend method</strong>. The principle is thermodynamic: if your weight is stable over time, your calorie intake equals your calorie expenditure. If weight is changing, you adjust by the known energy density of body tissue.
+            <br><br>
+            <strong>The formula the app uses:</strong>
+          </div>
+          <div class="learn-formula">
+            TDEE = Avg daily calories logged − (weight trend lbs/day × 3,500)
+          </div>
+          <div class="learn-body-text">
+            A 2014 paper by Thomas et al. validated this approach and found that <strong>3 weeks of tracking</strong> provides a reliable signal while minimizing the impact of short-term water and glycogen fluctuations (which can mask real fat change on a day-to-day basis). The app uses linear regression across your daily weigh-ins to find the true weight trend, filtering out noise from water retention and digestive contents.
+            <br><br>
+            This method is equivalent to how dietitians estimate maintenance calories for clients when lab testing isn't available.
+          </div>
+          <span class="learn-cite">
+            Thomas DM, Gonzalez MC, Pereira AZ, Redman LM, Heymsfield SB.<br>
+            <em>Time to correctly predict the amount of weight loss with dieting.</em><br>
+            J Acad Nutr Diet. 2014 Jun;114(6):857–61.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/24355667/" target="_blank">PubMed: 24355667 ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 5. Protein -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('protein')">
+          <span class="learn-section-icon">💪</span>
+          <span class="learn-section-title">Protein Target — 1g per lb of Goal Body Weight</span>
+          <span class="learn-section-chevron" id="chev-protein">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-protein">
+          <div class="learn-body-text">
+            The app sets protein at <strong>1g per lb of your target body weight</strong>. This sits at the upper end of research-supported ranges and is intentionally aggressive for one reason: preserving muscle while losing fat.
+            <br><br>
+            During a calorie deficit, the body can break down muscle tissue for energy — a process called catabolism. Higher protein intake signals the body to preserve lean mass (muscle) and preferentially burn fat instead. This is especially important if you're also resistance training.
+            <br><br>
+            The research supports a range of roughly <strong>0.7–1.0g per lb of body weight</strong> for active individuals in a deficit. Using <em>target</em> weight rather than current weight avoids over-prescribing protein as you approach your goal, and better reflects the lean mass you're aiming to maintain.
+            <br><br>
+            The RDA of 0.36g/lb (0.8g/kg) is a minimum to prevent deficiency — not an optimal level for body composition or satiety.
+          </div>
+          <span class="learn-cite">
+            Morton RW, Murphy KT, McKellar SR, et al.<br>
+            <em>A systematic review, meta-analysis and meta-regression of the effect of protein supplementation on resistance training-induced gains in muscle mass and strength.</em><br>
+            Br J Sports Med. 2018 Mar;52(6):376–384.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/28698222/" target="_blank">PubMed: 28698222 ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 6. Fiber -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('fiber')">
+          <span class="learn-section-icon">🌾</span>
+          <span class="learn-section-title">Fiber — 14g per 1,000 kcal</span>
+          <span class="learn-section-chevron" id="chev-fiber">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-fiber">
+          <div class="learn-body-text">
+            The app scales fiber target to <strong>14g per 1,000 calories consumed</strong>, which mirrors the USDA Dietary Guidelines for Americans (2020–2025). For a 2,000 kcal diet that equals 28g/day — consistent with the general recommendations of 25–38g/day.
+            <br><br>
+            Dietary fiber plays several roles relevant to weight management and metabolic health:
+            <br><br>
+            <strong>Satiety</strong> — soluble fiber slows gastric emptying, keeping you fuller longer<br>
+            <strong>Blood sugar regulation</strong> — slows glucose absorption, reducing insulin spikes<br>
+            <strong>Gut microbiome health</strong> — fermentable fibers feed beneficial bacteria<br>
+            <strong>LDL cholesterol reduction</strong> — soluble fiber binds bile acids in the gut
+            <br><br>
+            Most Americans consume only 10–15g/day, making fiber one of the most common and impactful nutritional gaps.
+          </div>
+          <span class="learn-cite">
+            U.S. Department of Agriculture and U.S. Department of Health and Human Services.<br>
+            <em>Dietary Guidelines for Americans, 2020–2025. 9th Edition.</em><br>
+            <a href="https://www.dietaryguidelines.gov" target="_blank">dietaryguidelines.gov ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 7. Sugar -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('sugar')">
+          <span class="learn-section-icon">🍬</span>
+          <span class="learn-section-title">Added Sugar — Less Than 10% of Calories</span>
+          <span class="learn-section-chevron" id="chev-sugar">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-sugar">
+          <div class="learn-body-text">
+            The app targets sugar at <strong>10% of daily calories</strong>, consistent with recommendations from both the USDA Dietary Guidelines and the World Health Organization. For a 2,000 kcal diet, that's 50g or about 200 kcal from sugar.
+            <br><br>
+            The concern with excess added sugar isn't primarily calories — it's the metabolic effects. High sugar intake is associated with elevated triglycerides, insulin resistance, non-alcoholic fatty liver disease, and disrupted appetite regulation (particularly via the hormone leptin).
+            <br><br>
+            <strong>A practical note:</strong> the sugar tracked here includes all sugars — natural (fruit, dairy) and added. Naturally occurring sugars in whole foods carry fiber and micronutrients that blunt their metabolic impact. The guideline is most relevant to added sugars in processed foods and beverages. If your sugar intake is high but comes mostly from whole fruit, that's a different situation than the same number from soda.
+          </div>
+          <span class="learn-cite">
+            World Health Organization.<br>
+            <em>Guideline: Sugars intake for adults and children.</em><br>
+            Geneva: WHO; 2015.<br>
+            <a href="https://www.who.int/publications/i/item/9789241549028" target="_blank">who.int ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <!-- 8. Weight loss rate -->
+      <div class="learn-section">
+        <div class="learn-section-header" onclick="toggleLearn('rate')">
+          <span class="learn-section-icon">📉</span>
+          <span class="learn-section-title">Weight Loss Rate — Why 0.5 to 2 lbs per Week</span>
+          <span class="learn-section-chevron" id="chev-rate">▼</span>
+        </div>
+        <div class="learn-section-body" id="body-rate">
+          <div class="learn-body-text">
+            The app offers loss rates from 0.5 to 2 lbs/week. These bounds are grounded in research on muscle preservation and metabolic adaptation.
+            <br><br>
+            <strong>Too slow (&lt;0.5 lbs/week)</strong> — very small deficit, often within measurement error of daily weight fluctuations. Hard to stay consistent. Progress is difficult to perceive.
+            <br><br>
+            <strong>Too fast (&gt;2 lbs/week)</strong> — requires a deficit greater than 1,000 kcal/day, which is difficult to sustain and significantly increases the proportion of weight lost as muscle rather than fat. Research consistently shows that aggressive deficits without sufficient protein and resistance training result in roughly 25–50% of weight loss coming from lean mass.
+            <br><br>
+            <strong>The sweet spot is 0.5–1 lb/week</strong> for most people — enough progress to stay motivated, with a deficit small enough to preserve muscle and maintain adherence. The 1.5–2 lb/week options are included for individuals who are significantly overweight, where larger deficits are safer and muscle loss is proportionally lower.
+          </div>
+          <span class="learn-cite">
+            Barakat C, Pearson J, Escalante G, Campbell B, De Souza EO.<br>
+            <em>Body Recomposition: Can Trained Individuals Build Muscle and Lose Fat at the Same Time?</em><br>
+            Strength Cond J. 2020 Oct;42(5):7–21.<br>
+            <a href="https://pubmed.ncbi.nlm.nih.gov/none" target="_blank">NSCA ↗</a>
+          </span>
+        </div>
+      </div>
+
+      <div style="padding: 12px 0 24px; text-align:center; font-size:11px; color:var(--text3); line-height:1.8">
+        This app is for informational purposes only.<br>
+        Consult a registered dietitian or physician before making significant dietary changes.
+      </div>
+    </div>
+
   <nav class="nav">
     <button class="nav-btn active" onclick="showPage('today',this)" id="nav-today">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
@@ -575,6 +823,10 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
     <button class="nav-btn" onclick="showPage('recipes',this)" id="nav-recipes">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M2 3h6a4 4 0 0 1 4 4v14a3 3 0 0 0-3-3H2z"/><path d="M22 3h-6a4 4 0 0 0-4 4v14a3 3 0 0 1 3-3h7z"/></svg>
       <span class="nav-label">Recipes</span>
+    </button>
+    <button class="nav-btn" onclick="showPage('learn',this)" id="nav-learn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+      <span class="nav-label">Learn</span>
     </button>
   </nav>
 </div>
@@ -704,6 +956,7 @@ function showPage(name, btn) {
   if (name === 'history') renderHistory();
   if (name === 'goals')   { renderGoals(); renderCalibration(); }
   if (name === 'recipes') renderRecipes();
+  // Learn page is static HTML — no render needed
 }
 function changeDay(d) {
   const cur = new Date(viewDate+'T00:00:00');
@@ -715,6 +968,15 @@ function changeDay(d) {
 function renderDateLabel() {
   const isToday = viewDate === todayKey();
   document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
+}
+
+// ── LEARN PAGE ────────────────────────────────────────────────────────────────
+function toggleLearn(id) {
+  const body = document.getElementById('body-' + id);
+  const chev = document.getElementById('chev-' + id);
+  if (!body) return;
+  const isOpen = body.classList.toggle('open');
+  if (chev) chev.classList.toggle('open', isOpen);
 }
 
 // ── PROGRESS COLOR ────────────────────────────────────────────────────────────
