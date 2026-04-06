@@ -179,6 +179,18 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .rec-item.full { grid-column: 1 / -1; }
 .tdee-box { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px 14px; font-size: 12px; color: var(--text3); font-family: var(--mono); line-height: 1.9; margin-bottom: 12px; }
 .tdee-box strong { color: var(--text2); }
+/* CALIBRATION */
+.calib-progress-bar { background: var(--bg4); border-radius: 999px; height: 8px; margin: 10px 0 14px; overflow: hidden; }
+.calib-progress-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.4s ease; }
+.calib-day-row { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--border); font-size: 13px; }
+.calib-day-row:last-child { border-bottom: none; }
+.calib-result-box { background: var(--bg3); border-radius: var(--radius-sm); padding: 16px; text-align: center; margin: 14px 0; }
+.calib-result-val { font-size: 36px; font-weight: 700; color: var(--accent); font-family: var(--mono); }
+.calib-result-lbl { font-size: 11px; color: var(--text3); margin-top: 4px; }
+.calib-result-detail { font-size: 12px; color: var(--text2); margin-top: 10px; font-family: var(--mono); line-height: 1.8; }
+.weigh-in-row { display: flex; gap: 8px; align-items: center; margin: 4px 0; }
+.weigh-in-input { flex: 1; background: var(--bg4); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px 12px; color: var(--text); font-size: 18px; font-weight: 600; font-family: var(--mono); outline: none; text-align: center; }
+.weigh-in-input:focus { border-color: var(--accent); }
 /* GOAL PROGRESS CARD */
 .goal-summary { font-size: 14px; color: var(--text2); line-height: 1.8; margin-bottom: 14px; }
 .goal-summary strong { color: var(--text); }
@@ -515,7 +527,13 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div class="goal-chart-wrap"><canvas id="goal-chart"></canvas></div>
       </div>
 
-      <!-- 4. DAILY TARGETS (always editable) -->
+      <!-- 4. CALIBRATION -->
+      <div class="card" id="calib-card">
+        <div class="card-title">True Maintenance Calories <span style="font-size:10px;font-family:var(--mono);color:var(--text3);background:var(--bg3);padding:2px 8px;border-radius:99px;margin-left:6px">CALIBRATE</span></div>
+        <div id="calib-content"></div>
+      </div>
+
+      <!-- 5. DAILY TARGETS (always editable) -->
       <div class="card">
         <div class="card-title">Daily targets</div>
         <div id="goals-list"></div>
@@ -684,7 +702,7 @@ function showPage(name, btn) {
   if (name === 'today')   renderToday();
   if (name === 'log')     renderLogPage();
   if (name === 'history') renderHistory();
-  if (name === 'goals')   renderGoals();
+  if (name === 'goals')   { renderGoals(); renderCalibration(); }
   if (name === 'recipes') renderRecipes();
 }
 function changeDay(d) {
@@ -1790,8 +1808,8 @@ function calculateGoals() {
 
   // ── Show TDEE summary ──
   document.getElementById('tdee-summary').innerHTML =
-    `<strong>BMR:</strong> ${rec.bmr} kcal &nbsp;·&nbsp; ` +
-    `<strong>TDEE:</strong> ${rec.tdee} kcal &nbsp;·&nbsp; ` +
+    `<strong>BMR (Basal Metabolic Rate):</strong> ${rec.bmr} kcal &nbsp;·&nbsp; ` +
+    `<strong>TDEE (Total Daily Energy Expenditure):</strong> ${rec.tdee} kcal &nbsp;·&nbsp; ` +
     `<strong>Deficit:</strong> ${rec.deficit} kcal/day &nbsp;·&nbsp; ` +
     `<strong>Rate:</strong> ${p.lossRate} lbs/week`;
 
@@ -1906,6 +1924,175 @@ function renderProgressChart(p, rec) {
   });
 }
 
+// ── CALIBRATION ───────────────────────────────────────────────────────────────
+// Measures true TDEE (Total Daily Energy Expenditure) empirically over 21 days by
+// comparing average logged calories against actual weight trend (lbs lost or gained).
+// Based on: if weight is stable, calories in = calories out. Each lb ≈ 3,500 kcal.
+
+function startCalibration() {
+  state.calibration = { phase: 'active', startDate: todayKey(), weighIns: {} };
+  save();
+  renderCalibration();
+}
+
+function cancelCalibration() {
+  if (!confirm('Cancel calibration and clear all weigh-ins?')) return;
+  state.calibration = { phase: 'idle', startDate: null, weighIns: {} };
+  save();
+  renderCalibration();
+}
+
+function logCalibrationWeight() {
+  const input = document.getElementById('calib-weight-input');
+  const val = parseFloat(input?.value);
+  if (!val || val < 50 || val > 700) { toast('Enter a valid weight in lbs'); return; }
+  if (!state.calibration) state.calibration = { phase: 'idle', startDate: null, weighIns: {} };
+  state.calibration.weighIns[todayKey()] = val;
+  save();
+  renderCalibration();
+  toast('Weight logged ✓');
+}
+
+function applyCalibrationTDEE() {
+  const result = calcCalibrationTDEE();
+  if (!result) return;
+  state.goals.calories = result.tdee;
+  const el = document.getElementById('g-calories');
+  if (el) el.value = result.tdee;
+  save();
+  toast(`Calorie goal set to ${result.tdee} kcal`);
+}
+
+function calcCalibrationTDEE() {
+  const c = state.calibration;
+  if (!c || !c.startDate || !c.weighIns) return null;
+
+  const weighDates = Object.keys(c.weighIns).sort();
+  if (weighDates.length < 5) return null;
+
+  // Average logged calories over the calibration window
+  const start = c.startDate;
+  const end   = todayKey();
+  const calDays = [];
+  for (const [dateKey, log] of Object.entries(state.logs || {})) {
+    if (dateKey >= start && dateKey <= end && log.entries?.length > 0) {
+      const total = log.entries.reduce((s, e) => s + (e.calories || 0), 0);
+      if (total > 500) calDays.push(total); // ignore suspiciously low days
+    }
+  }
+  if (calDays.length < 3) return null;
+  const avgCals = Math.round(calDays.reduce((a, b) => a + b, 0) / calDays.length);
+
+  // Linear regression on weigh-ins → lbs/day trend
+  const origin = new Date(start + 'T00:00:00');
+  const pts = weighDates.map(d => ({
+    x: Math.round((new Date(d + 'T00:00:00') - origin) / 86400000),
+    y: c.weighIns[d]
+  }));
+  const n    = pts.length;
+  const sumX = pts.reduce((s, p) => s + p.x, 0);
+  const sumY = pts.reduce((s, p) => s + p.y, 0);
+  const sumXY= pts.reduce((s, p) => s + p.x * p.y, 0);
+  const sumXX= pts.reduce((s, p) => s + p.x * p.x, 0);
+  const denom = (n * sumXX - sumX * sumX);
+  const slope = denom !== 0 ? (n * sumXY - sumX * sumY) / denom : 0; // lbs/day
+
+  // TDEE = avgCals adjusted for weight trend
+  // Gaining weight → deficit was positive → TDEE < avgCals; losing → TDEE > avgCals
+  const tdee = Math.round(avgCals - slope * 3500);
+
+  const days = weighDates.length;
+  const confidence = days >= 18 ? 'High confidence' : days >= 11 ? 'Moderate confidence' : 'Early estimate';
+
+  const totalChange = +(slope * (pts[pts.length-1].x - pts[0].x)).toFixed(1);
+  const direction = slope < -0.015 ? `losing ~${Math.abs(totalChange)} lbs over tracking period`
+                  : slope >  0.015 ? `gaining ~${Math.abs(totalChange)} lbs over tracking period`
+                  : 'weight holding steady';
+
+  return { tdee, avgCals, slope, confidence, direction, days, calDays: calDays.length };
+}
+
+function renderCalibration() {
+  const el = document.getElementById('calib-content');
+  if (!el) return;
+
+  const c = state.calibration || { phase: 'idle', startDate: null, weighIns: {} };
+
+  if (c.phase === 'idle') {
+    el.innerHTML = `
+      <p style="font-size:13px;color:var(--text2);line-height:1.7;margin-bottom:14px">
+        BMR (Basal Metabolic Rate) formulas estimate your needs from body stats, but can be off by 10–15% for any individual.
+        <strong>True calibration</strong> measures your actual maintenance over 21 days: log your weight each morning and keep eating normally.
+        The app compares your average calories to your weight trend and calculates your real
+        TDEE (Total Daily Energy Expenditure) — no lab required.
+      </p>
+      <button class="btn btn-primary" onclick="startCalibration()">▶ Start 21-day calibration</button>`;
+    return;
+  }
+
+  const weighIns  = c.weighIns || {};
+  const weighDates = Object.keys(weighIns).sort();
+  const origin    = new Date(c.startDate + 'T00:00:00');
+  const today     = todayKey();
+  const dayNum    = Math.round((new Date(today + 'T00:00:00') - origin) / 86400000) + 1;
+  const pct       = Math.min(100, Math.round((weighDates.length / 21) * 100));
+  const todayDone = weighIns[today] != null;
+  const result    = calcCalibrationTDEE();
+
+  let html = `
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <span style="font-size:12px;color:var(--text3);font-family:var(--mono)">${weighDates.length} / 21 weigh-ins</span>
+      <span style="font-size:11px;color:var(--text3)">Day ${dayNum}</span>
+    </div>
+    <div class="calib-progress-bar"><div class="calib-progress-fill" style="width:${pct}%"></div></div>`;
+
+  if (!todayDone) {
+    html += `
+      <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px">
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Log today's weight (lbs)</div>
+        <div class="weigh-in-row">
+          <input class="weigh-in-input" type="number" id="calib-weight-input" inputmode="decimal" placeholder="e.g. 215.4"/>
+          <button class="btn btn-primary" style="flex-shrink:0" onclick="logCalibrationWeight()">Log</button>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:6px">Weigh yourself first thing in the morning for consistency.</div>
+      </div>`;
+  } else {
+    html += `<div style="text-align:center;padding:8px 0 12px;font-size:13px;color:var(--green)">✓ Today logged: ${weighIns[today]} lbs</div>`;
+  }
+
+  if (result) {
+    const confColor = result.confidence === 'High confidence' ? 'var(--green)'
+                    : result.confidence === 'Moderate confidence' ? 'var(--amber)' : 'var(--blue)';
+    html += `
+      <div class="calib-result-box">
+        <div style="font-size:10px;color:${confColor};font-family:var(--mono);text-transform:uppercase;letter-spacing:0.1em;margin-bottom:8px">${result.confidence}</div>
+        <div class="calib-result-val">${result.tdee}</div>
+        <div class="calib-result-lbl">estimated maintenance kcal/day (TDEE)</div>
+        <div class="calib-result-detail">
+          Avg logged calories: ${result.avgCals} kcal/day (${result.calDays} days)<br>
+          Weight trend: ${result.direction}
+        </div>
+      </div>
+      <button class="btn btn-primary" style="width:100%;margin-bottom:10px" onclick="applyCalibrationTDEE()">Apply as my calorie goal</button>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--text3);text-align:center;padding:10px 0 12px;line-height:1.6">
+      Estimate appears after <strong>5+ weigh-ins</strong> and <strong>3+ logged meal days</strong>.<br>Keep going!
+    </div>`;
+  }
+
+  if (weighDates.length > 0) {
+    html += `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Recent weigh-ins</div>`;
+    weighDates.slice(-7).reverse().forEach(d => {
+      const lbl = d === today ? 'Today' : fmtKey(d);
+      html += `<div class="calib-day-row"><span>${lbl}</span><span style="font-family:var(--mono);color:var(--text2)">${weighIns[d]} lbs</span></div>`;
+    });
+  }
+
+  html += `<button class="btn" style="width:100%;margin-top:14px;background:var(--bg3);border:1px solid var(--border2);color:var(--text3);font-size:12px" onclick="cancelCalibration()">Cancel calibration</button>`;
+
+  el.innerHTML = html;
+}
+
 // ── EXPORT / IMPORT ───────────────────────────────────────────────────────────
 function exportData() {
   const blob = new Blob([JSON.stringify(state, null, 2)], {type:'application/json'});
@@ -1962,9 +2149,10 @@ async function init() {
     const saved = await idbGet('mt_state');
     if (saved && saved.goals && saved.logs) {
       state = saved;
-      if (!state.savedFoods) state.savedFoods = [];
-      if (!state.profile)    state.profile    = {...DEFAULT_PROFILE};
-      if (!state.recipes)    state.recipes    = [];
+      if (!state.savedFoods)   state.savedFoods   = [];
+      if (!state.profile)      state.profile      = {...DEFAULT_PROFILE};
+      if (!state.recipes)      state.recipes      = [];
+      if (!state.calibration)  state.calibration  = { phase: 'idle', startDate: null, weighIns: {} };
     } else {
       // Fall back to localStorage if IDB is empty (first install or cleared)
       const ls = localStorage.getItem('mt_v2');
@@ -1972,9 +2160,10 @@ async function init() {
         const parsed = JSON.parse(ls);
         if (parsed && parsed.goals) {
           state = parsed;
-          if (!state.savedFoods) state.savedFoods = [];
-          if (!state.profile)    state.profile    = {...DEFAULT_PROFILE};
-          if (!state.recipes)    state.recipes    = [];
+          if (!state.savedFoods)   state.savedFoods   = [];
+          if (!state.profile)      state.profile      = {...DEFAULT_PROFILE};
+          if (!state.recipes)      state.recipes      = [];
+          if (!state.calibration)  state.calibration  = { phase: 'idle', startDate: null, weighIns: {} };
           await idbSet('mt_state', state); // promote to IDB
         }
       }
@@ -1983,12 +2172,13 @@ async function init() {
     // IDB unavailable — use localStorage only
     try {
       const ls = localStorage.getItem('mt_v2');
-      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; if (!state.recipes) state.recipes = []; }
+      if (ls) { state = JSON.parse(ls) || state; if (!state.savedFoods) state.savedFoods = []; if (!state.profile) state.profile = {...DEFAULT_PROFILE}; if (!state.recipes) state.recipes = []; if (!state.calibration) state.calibration = { phase: 'idle', startDate: null, weighIns: {} }; }
     } catch(e2) {}
   }
   viewDate = todayKey();
   renderDateLabel();
   renderToday();
+  renderCalibration();
   dismissInstall();
 }
 init();
