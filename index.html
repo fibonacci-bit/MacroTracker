@@ -190,6 +190,9 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 .sex-toggle { display: flex; gap: 8px; }
 .sex-btn { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px; color: var(--text3); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-align: center; transition: all 0.15s; }
 .sex-btn.active { border-color: var(--blue); color: var(--blue); background: rgba(96,165,250,0.08); }
+.unit-toggle { display: flex; gap: 8px; }
+.unit-btn { flex: 1; background: var(--bg3); border: 1px solid var(--border2); border-radius: var(--radius-sm); padding: 10px; color: var(--text3); font-size: 14px; font-weight: 600; font-family: var(--font); cursor: pointer; text-align: center; transition: all 0.15s; }
+.unit-btn.active { border-color: var(--accent); color: var(--accent); background: rgba(74,222,128,0.08); }
 /* RECOMMENDATION DISPLAY */
 .rec-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 14px; }
 .rec-item { background: var(--bg3); border-radius: var(--radius-sm); padding: 12px; }
@@ -502,6 +505,15 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
       <div class="card">
         <div class="card-title">Your profile</div>
 
+        <!-- Units -->
+        <div class="form-group">
+          <label class="form-label">Units</label>
+          <div class="unit-toggle">
+            <button class="unit-btn" id="unit-imperial" onclick="setUnits('imperial')">Imperial (lbs / ft)</button>
+            <button class="unit-btn" id="unit-metric"   onclick="setUnits('metric')">Metric (kg / cm)</button>
+          </div>
+        </div>
+
         <!-- Sex -->
         <div class="form-group">
           <label class="form-label">Sex</label>
@@ -519,9 +531,12 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
           </div>
           <div>
             <label class="form-label">Height</label>
-            <div style="display:flex;gap:6px">
+            <div id="height-imperial" style="display:flex;gap:6px">
               <input class="form-input" type="number" id="p-ft" inputmode="decimal" placeholder="ft" style="width:50%"/>
               <input class="form-input" type="number" id="p-in" inputmode="decimal" placeholder="in" style="width:50%"/>
+            </div>
+            <div id="height-metric" style="display:none">
+              <input class="form-input" type="number" id="p-cm" inputmode="decimal" placeholder="e.g. 180"/>
             </div>
           </div>
         </div>
@@ -529,11 +544,11 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <!-- Weights -->
         <div class="form-grid form-group">
           <div>
-            <label class="form-label">Current weight (lbs)</label>
+            <label class="form-label" id="lbl-weight">Current weight (lbs)</label>
             <input class="form-input" type="number" id="p-weight" inputmode="decimal" placeholder="e.g. 233"/>
           </div>
           <div>
-            <label class="form-label">Target weight (lbs)</label>
+            <label class="form-label" id="lbl-target">Target weight (lbs)</label>
             <input class="form-input" type="number" id="p-target" inputmode="decimal" placeholder="e.g. 185"/>
           </div>
         </div>
@@ -884,7 +899,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
 <script>
 // ── CONSTANTS ────────────────────────────────────────────────────────────────
 const DEFAULT_GOALS   = { calories: 1900, protein: 190, carbs: 163, fat: 65, fiber: 30, sugar: 50 };
-const DEFAULT_PROFILE = { sex:'male', age:42, heightFt:6, heightIn:3, weightLbs:233, targetLbs:185, activity:1.2, lossRate:1.5 };
+const DEFAULT_PROFILE = { sex:'male', age:42, heightFt:6, heightIn:3, weightLbs:233, targetLbs:185, activity:1.2, lossRate:1.5, units:'imperial' };
 const ACTIVITY_OPTIONS = [
   { label:'Sedentary',       sub:'Desk job, little/no exercise',        value:1.2   },
   { label:'Lightly active',  sub:'Light exercise 1–3 days/week',        value:1.375 },
@@ -997,6 +1012,28 @@ function renderDateLabel() {
   document.getElementById('date-label').textContent = isToday ? 'Today' : fmtKey(viewDate);
 }
 
+// ── UNIT HELPERS ─────────────────────────────────────────────────────────────
+function isMetric() { return (state.profile?.units || 'imperial') === 'metric'; }
+function lbsToKg(lbs) { return +(lbs * 0.453592).toFixed(1); }
+function kgToLbs(kg)  { return +(kg  * 2.20462).toFixed(1); }
+function ftInToCm(ft, ins) { return +(ft * 30.48 + (ins||0) * 2.54).toFixed(0); }
+function cmToFtIn(cm) { const totalIn = cm / 2.54; return { ft: Math.floor(totalIn/12), ins: Math.round(totalIn%12) }; }
+function wtUnit()  { return isMetric() ? 'kg' : 'lbs'; }
+function dispWt(lbs, decimals) {
+  if (!lbs) return '';
+  const v = isMetric() ? lbsToKg(lbs) : lbs;
+  return decimals ? +v.toFixed(decimals) : Math.round(v);
+}
+
+function setUnits(u) {
+  if (!state.profile) state.profile = {...DEFAULT_PROFILE};
+  state.profile.units = u;
+  save();
+  renderGoals();
+  renderCheckIn();
+  renderCalibration();
+}
+
 // ── LEARN PAGE ────────────────────────────────────────────────────────────────
 function toggleLearn(id) {
   const body = document.getElementById('body-' + id);
@@ -1102,7 +1139,7 @@ function renderLogPage() {
       ? `<div class="checkin-card" style="cursor:pointer" onclick="showPage('today',document.getElementById('nav-today'));setTimeout(()=>document.getElementById('checkin-widget')?.scrollIntoView({behavior:'smooth'}),100)">
            <span style="font-size:16px">⚖️</span>
            <span class="checkin-label">Daily check-in</span>
-           <span class="checkin-val">${ci} lbs ✓</span>
+           <span class="checkin-val">${dispWt(ci,1)} ${wtUnit()} ✓</span>
          </div>`
       : `<div class="checkin-card" style="cursor:pointer;border-color:var(--purple)" onclick="showPage('today',document.getElementById('nav-today'));setTimeout(()=>document.getElementById('checkin-widget')?.scrollIntoView({behavior:'smooth'}),100)">
            <span style="font-size:16px">⚖️</span>
@@ -2014,15 +2051,29 @@ function renderHistory() {
 
 // Helper: read the profile inputs into an object (without saving yet)
 function readProfileInputs() {
+  const metric = isMetric();
+  let heightFt, heightIn, weightLbs, targetLbs;
+
+  if (metric) {
+    const cm = parseFloat(document.getElementById('p-cm').value) || 0;
+    const fti = cmToFtIn(cm);
+    heightFt = fti.ft; heightIn = fti.ins;
+    weightLbs = kgToLbs(parseFloat(document.getElementById('p-weight').value) || 0);
+    targetLbs = kgToLbs(parseFloat(document.getElementById('p-target').value) || 0);
+  } else {
+    heightFt  = n(document.getElementById('p-ft').value);
+    heightIn  = n(document.getElementById('p-in').value);
+    weightLbs = parseFloat(document.getElementById('p-weight').value) || 0;
+    targetLbs = parseFloat(document.getElementById('p-target').value) || 0;
+  }
+
   return {
-    sex:       document.getElementById('sex-male').classList.contains('active') ? 'male' : 'female',
-    age:       n(document.getElementById('p-age').value),
-    heightFt:  n(document.getElementById('p-ft').value),
-    heightIn:  n(document.getElementById('p-in').value),
-    weightLbs: parseFloat(document.getElementById('p-weight').value) || 0,
-    targetLbs: parseFloat(document.getElementById('p-target').value) || 0,
-    activity:  parseFloat(document.getElementById('p-activity').value) || 1.2,
-    lossRate:  state.profile.lossRate || 1.5,
+    sex:      document.getElementById('sex-male').classList.contains('active') ? 'male' : 'female',
+    age:      n(document.getElementById('p-age').value),
+    heightFt, heightIn, weightLbs, targetLbs,
+    activity: parseFloat(document.getElementById('p-activity').value) || 1.2,
+    lossRate: state.profile.lossRate || 1.5,
+    units:    state.profile.units || 'imperial',
   };
 }
 
@@ -2047,14 +2098,45 @@ function renderGoals() {
 
   // ── restore saved profile values ──
   const p = state.profile || DEFAULT_PROFILE;
+  const metric = (p.units || 'imperial') === 'metric';
+
+  // Unit toggle
+  document.getElementById('unit-imperial')?.classList.toggle('active', !metric);
+  document.getElementById('unit-metric')?.classList.toggle('active',  metric);
+
+  // Height fields
+  document.getElementById('height-imperial').style.display = metric ? 'none' : 'flex';
+  document.getElementById('height-metric').style.display   = metric ? 'block' : 'none';
+
+  // Weight labels
+  const wUnit = metric ? 'kg' : 'lbs';
+  const lw = document.getElementById('lbl-weight'); if (lw) lw.textContent = `Current weight (${wUnit})`;
+  const lt = document.getElementById('lbl-target'); if (lt) lt.textContent = `Target weight (${wUnit})`;
+
   setSex(p.sex);
-  document.getElementById('p-age').value    = p.age    || '';
-  document.getElementById('p-ft').value     = p.heightFt || '';
-  document.getElementById('p-in').value     = p.heightIn || '';
-  document.getElementById('p-weight').value = p.weightLbs || '';
-  document.getElementById('p-target').value = p.targetLbs || '';
+  document.getElementById('p-age').value = p.age || '';
+
+  if (metric) {
+    const cm = ftInToCm(p.heightFt || 0, p.heightIn || 0);
+    document.getElementById('p-cm').value = cm > 0 ? cm : '';
+  } else {
+    document.getElementById('p-ft').value = p.heightFt || '';
+    document.getElementById('p-in').value = p.heightIn || '';
+  }
+
+  document.getElementById('p-weight').value = p.weightLbs ? dispWt(p.weightLbs) : '';
+  document.getElementById('p-target').value = p.targetLbs ? dispWt(p.targetLbs) : '';
   actSel.value = p.activity || 1.2;
   setLossRate(p.lossRate || 1.5);
+
+  // Loss rate labels
+  const rateLabels = ['Easy','Moderate','Aggressive','Max'];
+  document.querySelectorAll('.seg-btn').forEach(btn => {
+    const rateLbs = parseFloat(btn.dataset.rate);
+    const rateDisplay = metric ? (rateLbs * 0.453592).toFixed(2).replace(/0+$/, '').replace(/\.$/, '') : rateLbs;
+    const idx = [0.5,1,1.5,2].indexOf(rateLbs);
+    btn.innerHTML = `<span class="seg-rate">${rateDisplay}</span>${wUnit}/wk<br>${rateLabels[idx]||''}`;
+  });
 
   // ── daily targets (always editable) ──
   document.getElementById('goals-list').innerHTML = Object.keys(GOAL_LABELS).map(k => `
@@ -2120,7 +2202,7 @@ function calculateGoals() {
     `<strong>BMR (Basal Metabolic Rate):</strong> ${rec.bmr} kcal &nbsp;·&nbsp; ` +
     `<strong>TDEE (Total Daily Energy Expenditure):</strong> ${rec.tdee} kcal &nbsp;·&nbsp; ` +
     `<strong>Deficit:</strong> ${rec.deficit} kcal/day &nbsp;·&nbsp; ` +
-    `<strong>Rate:</strong> ${p.lossRate} lbs/week`;
+    `<strong>Rate:</strong> ${isMetric() ? (p.lossRate*0.453592).toFixed(2).replace(/0+$/,'').replace(/\.$/,'') : p.lossRate} ${wtUnit()}/week`;
 
   // ── Show editable recommendation grid ──
   const recKeys = [
@@ -2163,21 +2245,25 @@ function applyRecommendations() {
 }
 
 function renderProgressChart(p, rec) {
-  const weeks = rec.weeksToGoal;
+  const weeks  = rec.weeksToGoal;
+  const metric = isMetric();
+  const wUnit  = wtUnit();
   const labels = [], data = [];
   for (let w = 0; w <= weeks; w++) {
     labels.push(w === 0 ? 'Now' : `Wk ${w}`);
-    data.push(+(p.weightLbs - p.lossRate * w).toFixed(1));
+    const wLbs = p.weightLbs - p.lossRate * w;
+    data.push(+(metric ? lbsToKg(wLbs) : wLbs).toFixed(1));
   }
 
   // Goal date
   const goalDate = new Date();
   goalDate.setDate(goalDate.getDate() + weeks * 7);
   const dateStr = goalDate.toLocaleDateString('en-US', { month:'long', day:'numeric', year:'numeric' });
+  const rateDisplay = metric ? (p.lossRate*0.453592).toFixed(2).replace(/\.?0+$/,'') : p.lossRate;
 
   document.getElementById('goal-summary').innerHTML =
-    `Losing <strong>${p.lossRate} lbs/week</strong>, you'll go from ` +
-    `<strong>${p.weightLbs} lbs</strong> to <strong>${p.targetLbs} lbs</strong> ` +
+    `Losing <strong>${rateDisplay} ${wUnit}/week</strong>, you'll go from ` +
+    `<strong>${dispWt(p.weightLbs)} ${wUnit}</strong> to <strong>${dispWt(p.targetLbs)} ${wUnit}</strong> ` +
     `in <strong>${weeks} weeks</strong> — around <strong>${dateStr}</strong>.`;
 
   if (goalChart) goalChart.destroy();
@@ -2225,8 +2311,8 @@ function renderProgressChart(p, rec) {
         y: {
           ticks: { color: '#555b75', font: { size: 11 } },
           grid: { color: 'rgba(255,255,255,0.04)' },
-          suggestedMin: p.targetLbs - 5,
-          suggestedMax: p.weightLbs + 5,
+          suggestedMin: dispWt(p.targetLbs) - (metric ? 2 : 5),
+          suggestedMax: dispWt(p.weightLbs) + (metric ? 2 : 5),
         }
       }
     }
@@ -2236,13 +2322,16 @@ function renderProgressChart(p, rec) {
 // ── WEIGHT CHECK-IN ───────────────────────────────────────────────────────────
 function logCheckIn() {
   const input = document.getElementById('checkin-input');
-  const val = parseFloat(input?.value);
-  if (!val || val < 50 || val > 700) { toast('Enter a valid weight in lbs'); return; }
+  const raw = parseFloat(input?.value);
+  if (!raw) { toast(`Enter a valid weight in ${wtUnit()}`); return; }
+  // Convert to lbs for internal storage
+  const valLbs = isMetric() ? kgToLbs(raw) : raw;
+  if (valLbs < 50 || valLbs > 700) { toast(`Enter a valid weight in ${wtUnit()}`); return; }
   if (!state.checkIns) state.checkIns = {};
-  state.checkIns[viewDate] = val;
+  state.checkIns[viewDate] = valLbs;
   // Also feed into calibration if active
   if (state.calibration?.phase === 'active') {
-    state.calibration.weighIns[viewDate] = val;
+    state.calibration.weighIns[viewDate] = valLbs;
   }
   save();
   renderCheckIn();
@@ -2251,7 +2340,6 @@ function logCheckIn() {
 }
 
 function editCheckIn() {
-  // Clear today's entry so the input shows again
   if (state.checkIns) delete state.checkIns[viewDate];
   save();
   renderCheckIn();
@@ -2261,19 +2349,20 @@ function renderCheckIn() {
   const el = document.getElementById('checkin-widget');
   if (!el) return;
   if (!state.checkIns) state.checkIns = {};
-  const val = state.checkIns[viewDate];
-  if (val != null) {
+  const valLbs = state.checkIns[viewDate];
+  const wUnit  = wtUnit();
+  if (valLbs != null) {
     el.innerHTML = `
       <div class="checkin-card">
         <span class="checkin-label">Daily check-in</span>
-        <span class="checkin-val">${val} lbs</span>
+        <span class="checkin-val">${dispWt(valLbs, 1)} ${wUnit}</span>
         <button class="checkin-btn" onclick="editCheckIn()">Edit</button>
       </div>`;
   } else {
     el.innerHTML = `
       <div class="checkin-card" style="border-color:var(--purple)">
         <span class="checkin-label">Daily check-in (optional)</span>
-        <input class="checkin-input" type="number" id="checkin-input" inputmode="decimal" placeholder="lbs"/>
+        <input class="checkin-input" type="number" id="checkin-input" inputmode="decimal" placeholder="${wUnit}"/>
         <button class="checkin-btn" onclick="logCheckIn()">Log</button>
       </div>`;
   }
@@ -2305,8 +2394,9 @@ function renderWeightTrend() {
   if (note)        note.style.display        = hasData ? 'block' : 'none';
   if (!hasData) return;
 
-  // Build raw daily series (null for days with no entry)
-  const rawData = allDates.map(d => checkIns[d] != null ? checkIns[d] : null);
+  // Build raw daily series — convert to display unit
+  const metric  = isMetric();
+  const rawData = allDates.map(d => checkIns[d] != null ? (metric ? lbsToKg(checkIns[d]) : checkIns[d]) : null);
 
   // 7-day rolling average (require at least 2 values in window)
   const avgData = allDates.map((d, i) => {
@@ -2314,13 +2404,13 @@ function renderWeightTrend() {
     return window.length >= 2 ? +(window.reduce((a, b) => a + b, 0) / window.length).toFixed(1) : null;
   });
 
-  // Trim labels to only show dates that have either raw or avg data
   const labels = allDates.map(fmtKeyShort);
 
   // Weight range for y-axis
   const allVals = [...rawData, ...avgData].filter(v => v != null);
-  const minW = Math.floor(Math.min(...allVals)) - 3;
-  const maxW = Math.ceil(Math.max(...allVals)) + 3;
+  const pad  = metric ? 2 : 3;
+  const minW = Math.floor(Math.min(...allVals)) - pad;
+  const maxW = Math.ceil(Math.max(...allVals))  + pad;
 
   if (weightChart) weightChart.destroy();
   weightChart = new Chart(document.getElementById('weight-chart'), {
@@ -2384,12 +2474,18 @@ function cancelCalibration() {
 
 function logCalibrationWeight() {
   const input = document.getElementById('calib-weight-input');
-  const val = parseFloat(input?.value);
-  if (!val || val < 50 || val > 700) { toast('Enter a valid weight in lbs'); return; }
+  const raw = parseFloat(input?.value);
+  if (!raw) { toast(`Enter a valid weight in ${wtUnit()}`); return; }
+  const valLbs = isMetric() ? kgToLbs(raw) : raw;
+  if (valLbs < 50 || valLbs > 700) { toast(`Enter a valid weight in ${wtUnit()}`); return; }
   if (!state.calibration) state.calibration = { phase: 'idle', startDate: null, weighIns: {} };
-  state.calibration.weighIns[todayKey()] = val;
+  state.calibration.weighIns[todayKey()] = valLbs;
+  // Keep checkIns in sync too
+  if (!state.checkIns) state.checkIns = {};
+  state.checkIns[todayKey()] = valLbs;
   save();
   renderCalibration();
+  renderCheckIn();
   toast('Weight logged ✓');
 }
 
@@ -2489,15 +2585,15 @@ function renderCalibration() {
   if (!todayDone) {
     html += `
       <div style="background:var(--bg3);border-radius:var(--radius-sm);padding:12px 14px;margin-bottom:12px">
-        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Log today's weight (lbs)</div>
+        <div style="font-size:12px;color:var(--text2);margin-bottom:8px;font-weight:600">Log today's weight (${wtUnit()})</div>
         <div class="weigh-in-row">
-          <input class="weigh-in-input" type="number" id="calib-weight-input" inputmode="decimal" placeholder="e.g. 215.4"/>
+          <input class="weigh-in-input" type="number" id="calib-weight-input" inputmode="decimal" placeholder="${isMetric() ? 'e.g. 97.5' : 'e.g. 215.4'}"/>
           <button class="btn btn-primary" style="flex-shrink:0" onclick="logCalibrationWeight()">Log</button>
         </div>
         <div style="font-size:11px;color:var(--text3);margin-top:6px">Weigh yourself first thing in the morning for consistency.</div>
       </div>`;
   } else {
-    html += `<div style="text-align:center;padding:8px 0 12px;font-size:13px;color:var(--green)">✓ Today logged: ${weighIns[today]} lbs</div>`;
+    html += `<div style="text-align:center;padding:8px 0 12px;font-size:13px;color:var(--green)">✓ Today logged: ${dispWt(weighIns[today],1)} ${wtUnit()}</div>`;
   }
 
   if (result) {
@@ -2524,7 +2620,7 @@ function renderCalibration() {
     html += `<div style="font-size:11px;color:var(--text3);font-family:var(--mono);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:6px">Recent weigh-ins</div>`;
     weighDates.slice(-7).reverse().forEach(d => {
       const lbl = d === today ? 'Today' : fmtKey(d);
-      html += `<div class="calib-day-row"><span>${lbl}</span><span style="font-family:var(--mono);color:var(--text2)">${weighIns[d]} lbs</span></div>`;
+      html += `<div class="calib-day-row"><span>${lbl}</span><span style="font-family:var(--mono);color:var(--text2)">${dispWt(weighIns[d],1)} ${wtUnit()}</span></div>`;
     });
   }
 
