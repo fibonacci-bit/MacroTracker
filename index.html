@@ -306,7 +306,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <div class="card-title">Search food database</div>
         <div class="search-row">
           <input class="form-input" type="text" id="fdc-search"
-            placeholder="e.g. chicken breast, greek yogurt…"
+            placeholder="Try simple terms — 'chicken' not 'chicken breast'"
             autocomplete="off"
             onkeydown="if(event.key==='Enter')searchFDC()"
             style="flex:1"/>
@@ -526,7 +526,7 @@ select.form-input { appearance: none; -webkit-appearance: none; background-image
         <!-- Age + Height -->
         <div class="form-grid form-group">
           <div>
-            <label class="form-label">Age (yrs)</label>
+            <label class="form-label">Age</label>
             <input class="form-input" type="number" id="p-age" inputmode="decimal" placeholder="e.g. 35"/>
           </div>
           <div>
@@ -1000,6 +1000,9 @@ function showPage(name, btn) {
   document.getElementById('page-'+name).classList.add('active');
   btn.classList.add('active');
   activePage = name;
+  // Date nav only makes sense on Today and Log
+  const dateNav = document.getElementById('date-nav-row');
+  if (dateNav) dateNav.style.display = (name === 'today' || name === 'log') ? 'flex' : 'none';
   if (name === 'today')   renderToday();
   if (name === 'log')     renderLogPage();
   if (name === 'history') renderHistory();
@@ -1195,7 +1198,7 @@ async function searchFDC() {
   _fdcResults = [];
 
   try {
-    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
+    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,Foundation&pageSize=8&sortBy=score&sortOrder=desc`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
@@ -1492,7 +1495,7 @@ async function searchRecipeIngredient() {
   resultsEl.innerHTML = '<div class="search-status"><span class="search-spinner"></span>Searching…</div>';
   _fdcResults = [];
   try {
-    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,SR%20Legacy&pageSize=15`;
+    const url = `${WORKER_URL}/foods/search?query=${encodeURIComponent(query)}&dataType=Branded,Foundation&pageSize=8&sortBy=score&sortOrder=desc`;
     const res = await fetch(url);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
